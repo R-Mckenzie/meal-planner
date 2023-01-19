@@ -3,9 +3,12 @@
 <html lang="en">
 	<head>
 		<title>MealPlanner.com</title>
+		<link href="/static/style.css" type="text/css" rel="stylesheet">
 	</head>
+
 	<body>
 		<div>
+			{{ template "navbar" }}
 			{{ template "yield" }}
 			{{ template "footer" }}
 		</div>
