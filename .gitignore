@@ -1,1 +1,5 @@
 /bin
+/data
+/tmp
+*.sh
+/exp
