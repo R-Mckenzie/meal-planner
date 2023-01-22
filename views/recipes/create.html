@@ -1,11 +1,12 @@
 {{ define "yield" }}
-<div class="container">
-	<h2>Create New Recipe</h2>
-	<form class="recipe-form" action="/recipes/create" method="post">
-		<input type="text" placeholder="Title" name="title" />
-		<textarea placeholder="Ingredients..." name="ingredients" rows="5" cols="50"></textarea>
-		<textarea placeholder="Instructions..." name="method" rows="5" cols="50"></textarea>
-		<button type="submit">Submit</button>
-	</form>
-</div>
+	<div class="container">
+		<h2>Create New Recipe</h2>
+		{{ template "alert" }}
+		<form class="form" action="/recipes/create" method="post">
+			<input type="text" placeholder="Title" name="title" />
+			<textarea placeholder="Ingredients..." name="ingredients" rows="5" cols="50"></textarea>
+			<textarea placeholder="Instructions..." name="method" rows="5" cols="50"></textarea>
+			<button type="submit">Submit</button>
+		</form>
+	</div>
 {{ end }}

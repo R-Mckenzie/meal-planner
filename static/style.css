@@ -1,21 +1,20 @@
 :root {
-	--bg: #ECFEE8;
 	--black: #000000;
 	--white: #FFFFFF;
-	--blue: #3E92CC;
-	--orange: #FCD0A1;
+	--bg: #e3f5df;
+	--fg: #000000;
+	--fg-2: #3b3b3b;
 
-	--green-1: #C7F9CC;
-	--green-2: #80ED99;
-	--green-3: #57CC99;
-	--teal: #38A3A5;
-	--blue: #22577A;
+	--errorbg: #E99886;
+	--errorfg: #AC340C;
+	--successbg: #afd49d;
+	--successfg: #527541;
 }
 
 body {
 	padding: 0;
 	margin: 0;
-	background: var(--green-1);
+	background: var(--bg);
 	font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -28,19 +27,65 @@ textarea {
 	resize: none;
 }
 
-.recipe-form {
-	margin: 1rem auto;
+.hero-container {
 	display: flex;
 	flex-direction: column;
-	row-gap: 1rem;
+	align-items: center;
+	margin: 8rem 0 8rem 0;
+}
+
+.hero {
+	font-size: 4rem;
+	font-weight: 900;
+	margin-bottom: 4rem;
+}
+
+.form {
+	margin: 2rem auto 0 auto;
+	display: flex;
+	flex-direction: column;
+	row-gap: 0.5rem;
+}
+
+.mt-1 {
+	margin-top: 1rem;
+}
+
+.fg-2 {
+	color: var(--fg-2);
+}
+
+.text-input {
+	padding: 0.5rem;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	border-radius: 5px;
 }
 
 .container {
-	max-width: 512px;
+	max-width: 300px;
 	margin: auto;
-	padding: 1rem 1rem;
+	padding: 2.5rem;
 	background: var(--white);
+	border-radius: 10px;
+	box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+.alert {
+	padding: 0.5rem;
+	max-height: fit-content;
 	border-radius: 5px;
+}
+
+.alert-error {
+	background: var(--errorbg);
+	color: var(--errorfg);
+	border: 1px solid var(--errorfg);
+}
+
+.alert-success {
+	background: var(--successbg);
+	color: var(--successfg);
+	border: 1px solid var(--successfg);
 }
 
 nav {
@@ -50,6 +95,9 @@ nav {
 }
 
 .nav-container {
+	max-width: 1500px;
+	width: 90vw;
+	margin: auto;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -72,15 +120,24 @@ nav .links {
 	align-items: center;
 }
 
-
-button {
-	background: var(--blue);
-	color: var(--white);
-	border: none;
-	padding-top: 0.5rem;
-	padding-bottom: 0.5rem;
+footer {
+	padding: 5rem;
 }
 
-button:hover {
+.button {
+	background: var(--black);
+	color: var(--white);
+	border: none;
+	padding: 0.7rem 0.7rem;
+	border-radius: 5px;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.button:hover {
 	cursor: pointer;
+}
+
+.center {
+	text-align: center;
 }

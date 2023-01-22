@@ -71,7 +71,7 @@ table "recipes" {
 
 	column "ingredients" {
 		null = false
-		type = varchar(300)
+		type = sql("varchar(50)[]")
 	}
 
 	column "method" {

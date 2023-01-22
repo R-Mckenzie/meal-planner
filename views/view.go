@@ -23,7 +23,7 @@ func NewView(layout string, files ...string) *View {
 
 	return &View{
 		Template: tmpl,
-		Layout: layout,
+		Layout:   layout,
 	}
 }
 
@@ -40,5 +40,15 @@ func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 type View struct {
 	Template *template.Template
-	Layout string
+	Layout   string
 }
+
+type Alert struct {
+	Type    string
+	Message string
+}
+
+const (
+	AlertError   string = "error"
+	AlertSuccess string = "success"
+)
