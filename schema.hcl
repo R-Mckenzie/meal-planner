@@ -21,6 +21,11 @@ table "users" {
 		type = char(60)
 	}
 
+	column "remember_hash" {
+		null = false
+		type = char(60)
+	}
+
 	column "created_at" {
 		null = false
 		type = timestamp
@@ -38,6 +43,11 @@ table "users" {
 
 	index "idx_email" {
 		columns = [column.email]
+		unique = true
+	}
+
+	index "idx_rememberHash" {
+		columns = [column.remember_hash]
 		unique = true
 	}
 

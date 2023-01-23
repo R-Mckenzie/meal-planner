@@ -48,7 +48,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(secureHeaders) // Set recommended security headers
 	r.Use(middleware.Logger)
-	
+
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	r.Handle("/", staticCtrl.Home)
 	r.Get("/recipes/create", recipeCtrl.CreatePage)
@@ -56,6 +56,8 @@ func main() {
 	r.Get("/signup", userCtrl.SignupPage)
 	r.Post("/signup", userCtrl.Signup)
 	r.Get("/login", userCtrl.LoginPage)
+	r.Post("/login", userCtrl.Login)
+	r.Get("/cookietest", userCtrl.CookieTest)
 
 	srv := &http.Server{
 		Addr:     ":4000",
