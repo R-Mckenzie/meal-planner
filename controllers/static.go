@@ -1,15 +1,24 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/R-Mckenzie/meal-planner/views"
 )
 
 func NewStatic() *Static {
 	return &Static{
-		Home: views.NewView("root", "views/static/home.html"),
+		HomeView: views.NewView("root", "views/static/home.html"),
+	}
+}
+
+func (s *Static) Home(w http.ResponseWriter, r *http.Request) {
+	s.HomeView.Data.User = r.Context().Value("mealplanner_current_user").(bool)
+	if err := s.HomeView.Render(w); err != nil {
+		panic(err)
 	}
 }
 
 type Static struct {
-	Home *views.View
+	HomeView *views.View
 }

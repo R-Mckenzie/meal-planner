@@ -1,17 +1,19 @@
 {{ define "root" }}
-	<!DOCTYPE html>
-	<html lang="en">
-		<head>
-			<title>MealPlanner.com</title>
-			<link href="/static/style.css" type="text/css" rel="stylesheet">
-		</head>
+<!DOCTYPE html>
+<html lang="en">
 
-		<body>
-			<div>
-				{{ template "navbar" }}
-				{{ template "yield" . }}
-				{{ template "footer" }}
-			</div>
-		</body>
-	</html>
+<head>
+	<title>MealPlanner.com</title>
+	<link href="/static/style.css" type="text/css" rel="stylesheet">
+</head>
+
+<body>
+	<div>
+		{{ template "navbar" . }}
+		{{ template "yield" . }}
+		{{ template "footer" }}
+	</div>
+</body>
+
+</html>
 {{ end }}

@@ -22,7 +22,8 @@ type Recipe struct {
 
 // shows the create recipe page
 func (re *Recipe) CreatePage(w http.ResponseWriter, r *http.Request) {
-	if err := re.CreateView.Render(w, nil); err != nil {
+	re.CreateView.Data.User = r.Context().Value("mealplanner_current_user").(bool)
+	if err := re.CreateView.Render(w); err != nil {
 		panic(err)
 	}
 }

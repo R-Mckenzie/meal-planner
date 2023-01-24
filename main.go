@@ -36,16 +36,19 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(secureHeaders)     // Set recommended security headers
 	r.Use(middleware.Logger) // Log all requests made to server
+	r.Use(app.authenticate)
 
 	// Routes
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-	r.Handle("/", staticCtrl.Home)
-	r.Get("/recipes/create", app.authorization(recipeCtrl.CreatePage))
-	r.Post("/recipes/create", app.authorization(recipeCtrl.Create))
+	r.Get("/", staticCtrl.Home)
+	r.Get("/recipes/create", app.authorise(recipeCtrl.CreatePage))
+	r.Post("/recipes/create", app.authorise(recipeCtrl.Create))
 	r.Get("/signup", userCtrl.SignupPage)
 	r.Post("/signup", userCtrl.Signup)
 	r.Get("/login", userCtrl.LoginPage)
 	r.Post("/login", userCtrl.Login)
+	r.Get("/logout", userCtrl.Logout)
+
 	r.Get("/cookietest", userCtrl.CookieTest)
 
 	srv := &http.Server{

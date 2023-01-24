@@ -13,12 +13,18 @@ const (
 
 type View struct {
 	Template *template.Template
+	Data     *Data
 	Layout   string
 }
 
 type Alert struct {
 	Type    string
 	Message string
+}
+
+type Data struct {
+	Alert Alert
+	User  bool
 }
 
 func layoutFiles() []string {
@@ -36,19 +42,25 @@ func NewView(layout string, files ...string) *View {
 		panic(err)
 	}
 
+	d := &Data{
+		Alert: Alert{Type: Success, Message: ""},
+		User:  false,
+	}
+
 	return &View{
 		Template: tmpl,
+		Data:     d,
 		Layout:   layout,
 	}
 }
 
-func (v *View) Render(w http.ResponseWriter, data interface{}) error {
-	return v.Template.ExecuteTemplate(w, v.Layout, data)
+func (v *View) Render(w http.ResponseWriter) error {
+	return v.Template.ExecuteTemplate(w, v.Layout, v.Data)
 }
 
 func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := v.Render(w, nil); err != nil {
+	if err := v.Render(w); err != nil {
 		panic(err)
 	}
 }

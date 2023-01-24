@@ -31,11 +31,12 @@ func NewUsers(us models.UserService) *User {
 }
 
 func (u *User) SignupPage(w http.ResponseWriter, r *http.Request) {
-	a := &views.Alert{Type: views.Success, Message: "Successfully created user"}
+	u.SignupView.Data.User = r.Context().Value("mealplanner_current_user").(bool)
+	u.SignupView.Data.Alert = views.Alert{Type: views.Success, Message: "Successfully created user"}
 	if r.URL.Query().Get("success") != "true" {
-		a.Message = ""
+		u.SignupView.Data.Alert.Message = ""
 	}
-	err := u.SignupView.Render(w, a)
+	err := u.SignupView.Render(w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -44,7 +45,8 @@ func (u *User) SignupPage(w http.ResponseWriter, r *http.Request) {
 func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		if err := u.SignupView.Render(w, views.Alert{Type: views.Error, Message: "There was a problem with your input"}); err != nil {
+		u.SignupView.Data.Alert = views.Alert{Type: views.Error, Message: "There was a problem with your input"}
+		if err := u.SignupView.Render(w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -63,7 +65,8 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 	message := strings.Join(faults, "\n")
 
 	if !valid || !validEmail {
-		err := u.SignupView.Render(w, views.Alert{Type: views.Error, Message: message})
+		u.SignupView.Data.Alert = views.Alert{Type: views.Error, Message: message}
+		err := u.SignupView.Render(w)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -72,7 +75,8 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 
 	if err := u.us.Create(email, password); err != nil {
 		w.WriteHeader(http.StatusConflict)
-		if err := u.SignupView.Render(w, views.Alert{Type: views.Error, Message: err.Error()}); err != nil {
+		u.SignupView.Data.Alert = views.Alert{Type: views.Error, Message: err.Error()}
+		if err := u.SignupView.Render(w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -81,7 +85,8 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *User) LoginPage(w http.ResponseWriter, r *http.Request) {
-	err := u.LoginView.Render(w, nil)
+	u.LoginView.Data.User = r.Context().Value("mealplanner_current_user").(bool)
+	err := u.LoginView.Render(w)
 	if err != nil {
 		panic(err)
 	}
@@ -89,9 +94,9 @@ func (u *User) LoginPage(w http.ResponseWriter, r *http.Request) {
 
 func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		a := views.Alert{Type: views.Error, Message: "There was a problem with your input"}
+		u.LoginView.Data.Alert = views.Alert{Type: views.Error, Message: "There was a problem with your input"}
 		w.WriteHeader(http.StatusBadRequest)
-		if err := u.LoginView.Render(w, a); err != nil {
+		if err := u.LoginView.Render(w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -102,9 +107,9 @@ func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := u.us.Authenticate(email, password)
 	if err != nil {
 		log.Println(err)
-		a := views.Alert{Type: views.Error, Message: err.Error()}
+		u.LoginView.Data.Alert = views.Alert{Type: views.Error, Message: err.Error()}
 		w.WriteHeader(http.StatusUnauthorized)
-		if err := u.LoginView.Render(w, a); err != nil {
+		if err := u.LoginView.Render(w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -128,6 +133,16 @@ func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookie)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (u *User) Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "remember_token",
+		Value:    "",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
 func (u *User) CookieTest(w http.ResponseWriter, r *http.Request) {
