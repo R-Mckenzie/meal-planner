@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -10,19 +9,15 @@ import (
 	"github.com/R-Mckenzie/meal-planner/views"
 )
 
-func NewRecipes(errLog, infLog log.Logger) *Recipe {
-	return &Recipe {
+func NewRecipes() *Recipe {
+	return &Recipe{
 		CreateView: views.NewView("root", "views/recipes/create.html"),
-		errLog: &errLog,
-		infLog: &infLog,
 	}
 }
 
 type Recipe struct {
-	CreateView *views.View	
-	rs *models.RecipeService
-	errLog *log.Logger
-	infLog *log.Logger
+	CreateView *views.View
+	rs         *models.RecipeService
 }
 
 // shows the create recipe page
@@ -35,19 +30,17 @@ func (re *Recipe) CreatePage(w http.ResponseWriter, r *http.Request) {
 // Adds a new recipe to the db
 func (re *Recipe) Create(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		re.errLog.Println("Error parsing recipe form: ", err)
+		http.Error(w, "There was a problem understanding your input", http.StatusBadRequest)
+		return
 	}
 
-	formData := RecipeForm {
-		Title: r.PostForm["title"][0],
+	formData := RecipeForm{
+		Title:       r.PostForm["title"][0],
 		Ingredients: parseIngredients(r.PostForm["ingredients"][0]),
-		Method: r.PostForm["method"][0],
+		Method:      r.PostForm["method"][0],
 	}
 
-	fmt.Fprintln(w, formData.Title)
-	fmt.Fprintln(w, formData.Ingredients)
-	fmt.Fprintln(w, formData.Method)
-	re.infLog.Println(formData)
+	log.Println(formData)
 }
 
 func parseIngredients(text string) []string {
@@ -60,7 +53,7 @@ func parseIngredients(text string) []string {
 }
 
 type RecipeForm struct {
-	Title string
+	Title       string
 	Ingredients []string
-	Method string
+	Method      string
 }
