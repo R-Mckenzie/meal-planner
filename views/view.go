@@ -6,6 +6,21 @@ import (
 	"path/filepath"
 )
 
+const (
+	Error   string = "error"
+	Success string = "success"
+)
+
+type View struct {
+	Template *template.Template
+	Layout   string
+}
+
+type Alert struct {
+	Type    string
+	Message string
+}
+
 func layoutFiles() []string {
 	files, err := filepath.Glob("views/layouts/" + "*" + ".html")
 	if err != nil {
@@ -37,18 +52,3 @@ func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 }
-
-type View struct {
-	Template *template.Template
-	Layout   string
-}
-
-type Alert struct {
-	Type    string
-	Message string
-}
-
-const (
-	AlertError   string = "error"
-	AlertSuccess string = "success"
-)

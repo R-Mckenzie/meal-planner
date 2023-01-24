@@ -12,25 +12,36 @@ import (
 	"github.com/R-Mckenzie/meal-planner/models"
 )
 
+type application struct {
+	services models.Services
+}
+
 func main() {
+	// Create servies
 	services, err := models.NewServices()
 	if err != nil {
 		panic(err)
 	}
 	defer services.CloseDB()
 
+	app := &application{
+		services: *services,
+	}
+
+	// Create controllers
 	staticCtrl := controllers.NewStatic()
 	recipeCtrl := controllers.NewRecipes()
 	userCtrl := controllers.NewUsers(services.Users)
 
 	r := chi.NewRouter()
-	r.Use(secureHeaders) // Set recommended security headers
-	r.Use(middleware.Logger)
+	r.Use(secureHeaders)     // Set recommended security headers
+	r.Use(middleware.Logger) // Log all requests made to server
 
+	// Routes
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	r.Handle("/", staticCtrl.Home)
-	r.Get("/recipes/create", recipeCtrl.CreatePage)
-	r.Post("/recipes/create", recipeCtrl.Create)
+	r.Get("/recipes/create", app.authorization(recipeCtrl.CreatePage))
+	r.Post("/recipes/create", app.authorization(recipeCtrl.Create))
 	r.Get("/signup", userCtrl.SignupPage)
 	r.Post("/signup", userCtrl.Signup)
 	r.Get("/login", userCtrl.LoginPage)

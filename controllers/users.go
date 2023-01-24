@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/R-Mckenzie/meal-planner/models"
+	"github.com/R-Mckenzie/meal-planner/validation"
 	"github.com/R-Mckenzie/meal-planner/views"
 )
 
@@ -29,7 +31,7 @@ func NewUsers(us models.UserService) *User {
 }
 
 func (u *User) SignupPage(w http.ResponseWriter, r *http.Request) {
-	a := &views.Alert{Type: views.AlertSuccess, Message: "Successfully created user"}
+	a := &views.Alert{Type: views.Success, Message: "Successfully created user"}
 	if r.URL.Query().Get("success") != "true" {
 		a.Message = ""
 	}
@@ -42,7 +44,7 @@ func (u *User) SignupPage(w http.ResponseWriter, r *http.Request) {
 func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		if err := u.SignupView.Render(w, views.Alert{Type: views.AlertError, Message: "There was a problem with your input"}); err != nil {
+		if err := u.SignupView.Render(w, views.Alert{Type: views.Error, Message: "There was a problem with your input"}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -50,9 +52,27 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 
 	email := r.PostForm["email"][0]
 	password := r.PostForm["password"][0]
+
+	email = strings.ToLower(email)
+	valid, faults := validation.PasswordCheck(password)
+	validEmail := validation.IsEmail(email)
+	if !validEmail {
+		faults = append(faults, "Must be a valid email")
+	}
+
+	message := strings.Join(faults, "\n")
+
+	if !valid || !validEmail {
+		err := u.SignupView.Render(w, views.Alert{Type: views.Error, Message: message})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
 	if err := u.us.Create(email, password); err != nil {
 		w.WriteHeader(http.StatusConflict)
-		if err := u.SignupView.Render(w, views.Alert{Type: views.AlertError, Message: err.Error()}); err != nil {
+		if err := u.SignupView.Render(w, views.Alert{Type: views.Error, Message: err.Error()}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -69,7 +89,7 @@ func (u *User) LoginPage(w http.ResponseWriter, r *http.Request) {
 
 func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		a := views.Alert{Type: views.AlertError, Message: "There was a problem with your input"}
+		a := views.Alert{Type: views.Error, Message: "There was a problem with your input"}
 		w.WriteHeader(http.StatusBadRequest)
 		if err := u.LoginView.Render(w, a); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -82,7 +102,7 @@ func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := u.us.Authenticate(email, password)
 	if err != nil {
 		log.Println(err)
-		a := views.Alert{Type: views.AlertError, Message: err.Error()}
+		a := views.Alert{Type: views.Error, Message: err.Error()}
 		w.WriteHeader(http.StatusUnauthorized)
 		if err := u.LoginView.Render(w, a); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
