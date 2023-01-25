@@ -23,8 +23,9 @@ type Alert struct {
 }
 
 type Data struct {
-	Alert Alert
-	User  bool
+	Alert     Alert
+	CSRFtoken string
+	User      bool
 }
 
 func layoutFiles() []string {
@@ -43,8 +44,9 @@ func NewView(layout string, files ...string) *View {
 	}
 
 	d := &Data{
-		Alert: Alert{Type: Success, Message: ""},
-		User:  false,
+		Alert:     Alert{Type: Success, Message: ""},
+		CSRFtoken: "",
+		User:      false,
 	}
 
 	return &View{

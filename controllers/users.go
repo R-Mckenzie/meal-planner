@@ -9,6 +9,7 @@ import (
 	"github.com/R-Mckenzie/meal-planner/models"
 	"github.com/R-Mckenzie/meal-planner/validation"
 	"github.com/R-Mckenzie/meal-planner/views"
+	"github.com/justinas/nosurf"
 )
 
 type User struct {
@@ -32,9 +33,11 @@ func NewUsers(us models.UserService) *User {
 
 func (u *User) SignupPage(w http.ResponseWriter, r *http.Request) {
 	u.SignupView.Data.User = r.Context().Value("mealplanner_current_user").(bool)
-	u.SignupView.Data.Alert = views.Alert{Type: views.Success, Message: "Successfully created user"}
-	if r.URL.Query().Get("success") != "true" {
-		u.SignupView.Data.Alert.Message = ""
+	u.SignupView.Data.Alert = views.Alert{Type: views.Success, Message: ""}
+	u.SignupView.Data.CSRFtoken = nosurf.Token(r)
+
+	if r.URL.Query().Get("success") == "true" {
+		u.SignupView.Data.Alert.Message = "Successfully created user"
 	}
 	err := u.SignupView.Render(w)
 	if err != nil {
@@ -61,7 +64,6 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 	if !validEmail {
 		faults = append(faults, "Must be a valid email")
 	}
-
 	message := strings.Join(faults, "\n")
 
 	if !valid || !validEmail {
@@ -77,6 +79,7 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusConflict)
 		u.SignupView.Data.Alert = views.Alert{Type: views.Error, Message: err.Error()}
 		if err := u.SignupView.Render(w); err != nil {
+			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -86,6 +89,8 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 
 func (u *User) LoginPage(w http.ResponseWriter, r *http.Request) {
 	u.LoginView.Data.User = r.Context().Value("mealplanner_current_user").(bool)
+	u.LoginView.Data.Alert = views.Alert{Type: views.Error, Message: ""}
+	u.LoginView.Data.CSRFtoken = nosurf.Token(r)
 	err := u.LoginView.Render(w)
 	if err != nil {
 		panic(err)

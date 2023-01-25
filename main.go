@@ -6,6 +6,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/justinas/nosurf"
+
 	_ "github.com/lib/pq"
 
 	"github.com/R-Mckenzie/meal-planner/controllers"
@@ -53,7 +55,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:    ":4000",
-		Handler: r,
+		Handler: nosurf.New(r),
 	}
 
 	err = srv.ListenAndServe()

@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/R-Mckenzie/meal-planner/tokens"
@@ -46,18 +47,20 @@ type userService struct {
 }
 
 type userPG struct {
-	db *sql.DB
+	db   *sql.DB
+	hmac tokens.HMAC
 }
 
-func newUserPG(db *sql.DB) (*userPG, error) {
+func newUserPG(db *sql.DB, hmac tokens.HMAC) (*userPG, error) {
 	return &userPG{
-		db: db,
+		db:   db,
+		hmac: hmac,
 	}, nil
 }
 
 func NewUserService(db *sql.DB) (UserService, error) {
 	hmac := tokens.NewHMAC(hmacSecret)
-	pgdb, err := newUserPG(db)
+	pgdb, err := newUserPG(db, hmac)
 	if err != nil {
 		return nil, err
 	}
@@ -103,15 +106,23 @@ func (us *userService) GenerateRemember(user *User) error {
 //=== DB SERVICE
 
 func (pg *userPG) Create(email, password string) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	token, err := tokens.RememberToken()
 	if err != nil {
 		return err
 	}
+	rememberHash := pg.hmac.Hash(token)
+
 	user := &User{
 		Email:        email,
 		passHash:     string(hash),
-		Remember:     "",
-		rememberHash: "",
+		Remember:     token,
+		rememberHash: rememberHash,
 		createdAt:    time.Now().UTC(),
 		updatedAt:    time.Now().UTC(),
 	}
@@ -120,9 +131,12 @@ func (pg *userPG) Create(email, password string) error {
 		user.Email, user.passHash, user.rememberHash, user.createdAt.Format(time.RFC3339), user.updatedAt.Format(time.RFC3339)).Scan(&user.ID)
 	var pgErr *pq.Error
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" { // Error code for constraint violation. email must be unique
+		log.Println(err)
+		log.Println(user.rememberHash)
 		return errors.New("A user already exists with this email")
 	}
 	if err != nil {
+		log.Println(err)
 		return errors.New("There was a problem signing you up")
 	}
 	return nil
