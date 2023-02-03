@@ -14,11 +14,11 @@ const (
 	dbname   = "mealplanner_dev"
 )
 
-// create db and all service instances
 type Services struct {
 	db      *sql.DB
 	Users   UserService
-	Recipes *RecipeService
+	Recipes RecipeService
+	Meals   MealService
 }
 
 func NewServices() (*Services, error) {
@@ -33,6 +33,8 @@ func NewServices() (*Services, error) {
 	}
 	log.Println("Successfully connected to database")
 
+	rs := NewRecipeService(db)
+	ms := NewMealService(db)
 	us, err := NewUserService(db)
 	if err != nil {
 		return nil, err
@@ -40,7 +42,8 @@ func NewServices() (*Services, error) {
 
 	return &Services{
 		Users:   us,
-		Recipes: &RecipeService{db},
+		Recipes: rs,
+		Meals:   ms,
 	}, nil
 }
 

@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+
+	"github.com/R-Mckenzie/meal-planner/models"
 )
 
 const (
@@ -22,10 +24,17 @@ type Alert struct {
 	Message string
 }
 
+type MealNode struct {
+	Title    string
+	RecipeID int
+}
+
 type Data struct {
 	Alert     Alert
 	CSRFtoken string
 	User      bool
+	Recipes   []models.Recipe
+	MealMap   map[int][]MealNode // the int key represents day of the week from [0]=monday to [6]=sunday
 }
 
 func layoutFiles() []string {

@@ -4,11 +4,14 @@
 	--bg: #e3f5df;
 	--fg: #000000;
 	--fg-2: #3b3b3b;
+	--red: #E3170A;
 
 	--errorbg: #E99886;
 	--errorfg: #AC340C;
 	--successbg: #afd49d;
 	--successfg: #527541;
+
+	--calendaralt: #f7f7f7;
 }
 
 body {
@@ -21,6 +24,10 @@ body {
 h1, h2, h3, h4, h5 {
 	margin: 0;
 	padding: 0;
+}
+
+h3 {
+	text-align: center;
 }
 
 textarea {
@@ -55,13 +62,145 @@ textarea {
 	color: var(--fg-2);
 }
 
+.w-100 {
+	width: 100%;
+}
+
 .text-input {
 	padding: 0.5rem;
 	border: 1px solid rgba(0, 0, 0, 0.15);
 	border-radius: 5px;
 }
 
-.container {
+.dashboard-container {
+	width: 90vw;
+	display: grid;
+	grid-template-columns: repeat(10, 9vw);
+	margin: auto;
+}
+
+.dashboard-recipes {
+	grid-column-start: 1;
+	grid-column-end: 3;
+	padding: 1rem;
+}
+
+.vh-70 {
+	height: 70vh;
+}
+
+.recipe-list {
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+	row-gap: 0.5rem;
+	height: 90%;
+	overflow-y: auto;
+}
+
+.recipe-item {
+	cursor: pointer;
+	background: var(--white);
+	border-radius: 10px;
+	box-shadow: 0 2px 7px rgba(0, 0, 0, 0.1);
+	padding: 0.75rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.meal-item {
+	box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+	margin: 0 0.25rem;
+}
+
+.delete-button {
+	background: var(--red);
+	/* background: var(--black); */
+	border-radius: 3px;
+	padding: 0.1rem 0.2rem;
+	color: var(--white);
+}
+
+.dashboard-calendar {
+	grid-column-start: 3;
+	grid-column-end: 11;
+	padding: 1rem;
+}
+
+.week-selector {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	column-gap: 0.5rem;
+}
+
+.week-selector .button {
+	padding: 0.3rem 0.5rem;
+}
+
+.save-button {
+	justify-self: flex-end;
+}
+
+.week-container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-direction: row;
+	height: calc(70vh + 2rem);
+}
+
+.week-col {
+	height: calc(100% - 2rem);
+	width: 100%;
+	padding: 1rem 0;
+	background: var(--white);
+}
+
+.left-col {
+	border-top-left-radius: 10px;
+	border-bottom-left-radius: 10px;
+}
+
+.right-col {
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+.even {
+	background: var(--calendaralt);
+}
+
+.dropzone {
+	height: 95%;
+	width: 100%;
+	margin-top: 1rem;
+	display: flex;
+	flex-direction: column;
+	row-gap: 0.5rem;
+}
+
+.under {
+	background: var(--successbg);
+}
+
+.calendar-card {
+	margin: auto;
+	background: var(--white);
+	border-radius: 10px;
+	box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+	margin: auto;
+	padding: 1rem;
+	background: var(--white);
+	border-radius: 10px;
+	box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-container {
 	max-width: 300px;
 	margin: auto;
 	padding: 2.5rem;
@@ -103,6 +242,10 @@ nav {
 	justify-content: space-between;
 }
 
+a {
+	text-decoration: none;
+}
+
 nav a {
 	text-decoration: none;
 	color: inherit;
@@ -136,6 +279,14 @@ footer {
 
 .button:hover {
 	cursor: pointer;
+}
+
+.newrecipe-button {
+	font-size: 0.75rem;
+	display: block;
+	margin-top: 1rem;
+	width: calc(100% - 1.4rem);
+	text-align: center;
 }
 
 .center {

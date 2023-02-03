@@ -13,7 +13,7 @@ func NewStatic() *Static {
 }
 
 func (s *Static) Home(w http.ResponseWriter, r *http.Request) {
-	s.HomeView.Data.User = r.Context().Value("mealplanner_current_user").(bool)
+	s.HomeView.Data.User = r.Context().Value("mealplanner_current_user").(int) >= 0
 	if err := s.HomeView.Render(w); err != nil {
 		panic(err)
 	}

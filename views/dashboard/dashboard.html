@@ -1,0 +1,111 @@
+{{ define "yield" }}
+<div class="dashboard-container" data-csrf="{{.CSRFtoken}}">
+	<div class="dashboard-recipes">
+		<h2>Recipes</h2><br>
+		<div class="vh-70 card mt-1">
+			<div class="recipe-list">
+				{{ range .Recipes }}
+				<div class="recipe-item" data-recipeID="{{.ID}}" draggable="true">
+					{{.Title}}
+					<div class="delete-button">&times</div>
+				</div>
+				{{ end }}
+			</div>
+			<a href="/recipes/create" class="button newrecipe-button">New Recipe</a>
+		</div>
+	</div>
+
+	<div class="dashboard-calendar">
+		<div class="week-selector">
+			<button class="button" id="prev-week">&lt;</button>
+			<h2 id="date">Date</h2>
+			<button class="button" id="next-week">&gt;</button>
+			<button class="button save-button">Save</button>
+		</div>
+		<br>
+		<div class="mt-1 calendar-card">
+			<div class="week-container">
+				<div class="week-col left-col">
+					<h3>Monday</h3>
+					<div id="0" class="dropzone">
+						{{ range index .MealMap 0 }}
+						<div class="recipe-item meal-item" data-recipeID="{{.RecipeID}}" draggable="true">
+							{{.Title}}
+							<div class="delete-button">&times</div>
+						</div>
+						{{ end }}
+					</div>
+				</div>
+				<div class="week-col even">
+					<h3>Tuesday</h3>
+					<div id="1" class="dropzone">
+						{{ range index .MealMap 1 }}
+						<div class="recipe-item meal-item" data-recipeID="{{.RecipeID}}" draggable="true">
+							{{.Title}}
+							<div class="delete-button">&times</div>
+						</div>
+						{{ end }}
+					</div>
+				</div>
+				<div class="week-col">
+					<h3>Wednesday</h3>
+					<div id="2" class="dropzone">
+						{{ range index .MealMap 2 }}
+						<div class="recipe-item meal-item" data-recipeID="{{.RecipeID}}" draggable="true">
+							{{.Title}}
+							<div class="delete-button">&times</div>
+						</div>
+						{{ end }}
+					</div>
+				</div>
+				<div class="week-col even">
+					<h3>Thursday</h3>
+					<div id="3" class="dropzone">
+						{{ range index .MealMap 3 }}
+						<div class="recipe-item meal-item" data-recipeID="{{.RecipeID}}" draggable="true">
+							{{.Title}}
+							<div class="delete-button">&times</div>
+						</div>
+						{{ end }}
+					</div>
+				</div>
+				<div class="week-col">
+					<h3>Friday</h3>
+					<div id="4" class="dropzone">
+						{{ range index .MealMap 4 }}
+						<div class="recipe-item meal-item" data-recipeID="{{.RecipeID}}" draggable="true">
+							{{.Title}}
+							<div class="delete-button">&times</div>
+						</div>
+						{{ end }}
+					</div>
+				</div>
+				<div class="week-col even">
+					<h3>Saturday</h3>
+					<div id="5" class="dropzone">
+						{{ range index .MealMap 5 }}
+						<div class="recipe-item meal-item" data-recipeID="{{.RecipeID}}" draggable="true">
+							{{.Title}}
+							<div class="delete-button">&times</div>
+						</div>
+						{{ end }}
+					</div>
+				</div>
+				<div class="week-col right-col">
+					<h3>Sunday</h3>
+					<div id="6" class="dropzone">
+						{{ range index .MealMap 6 }}
+						<div class="recipe-item meal-item" data-recipeID="{{.RecipeID}}" draggable="true">
+							{{.Title}}
+							<div class="delete-button">&times</div>
+						</div>
+						{{ end }}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript" src="./static/dashboard.js"></script>
+{{ end }}

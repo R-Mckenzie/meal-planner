@@ -32,7 +32,7 @@ func NewUsers(us models.UserService) *User {
 }
 
 func (u *User) SignupPage(w http.ResponseWriter, r *http.Request) {
-	u.SignupView.Data.User = r.Context().Value("mealplanner_current_user").(bool)
+	u.SignupView.Data.User = r.Context().Value("mealplanner_current_user").(int) >= 0
 	u.SignupView.Data.Alert = views.Alert{Type: views.Success, Message: ""}
 	u.SignupView.Data.CSRFtoken = nosurf.Token(r)
 
@@ -88,7 +88,7 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *User) LoginPage(w http.ResponseWriter, r *http.Request) {
-	u.LoginView.Data.User = r.Context().Value("mealplanner_current_user").(bool)
+	u.LoginView.Data.User = r.Context().Value("mealplanner_current_user").(int) >= 0
 	u.LoginView.Data.Alert = views.Alert{Type: views.Error, Message: ""}
 	u.LoginView.Data.CSRFtoken = nosurf.Token(r)
 	err := u.LoginView.Render(w)
@@ -137,7 +137,7 @@ func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 		log.Println("Problem generating remember token: ", err)
 	}
 	http.SetCookie(w, &cookie)
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (u *User) Logout(w http.ResponseWriter, r *http.Request) {

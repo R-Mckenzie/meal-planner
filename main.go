@@ -32,7 +32,8 @@ func main() {
 
 	// Create controllers
 	staticCtrl := controllers.NewStatic()
-	recipeCtrl := controllers.NewRecipes()
+	recipeCtrl := controllers.NewRecipes(services.Recipes)
+	dashCtrl := controllers.NewDashboard(services.Recipes, services.Meals, services.Users)
 	userCtrl := controllers.NewUsers(services.Users)
 
 	r := chi.NewRouter()
@@ -43,19 +44,24 @@ func main() {
 	// Routes
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	r.Get("/", staticCtrl.Home)
+	r.Get("/dashboard", app.authorise(dashCtrl.Dashboard))
+	r.Post("/dashboard", app.authorise(dashCtrl.SaveMeals))
 	r.Get("/recipes/create", app.authorise(recipeCtrl.CreatePage))
 	r.Post("/recipes/create", app.authorise(recipeCtrl.Create))
 	r.Get("/signup", userCtrl.SignupPage)
 	r.Post("/signup", userCtrl.Signup)
 	r.Get("/login", userCtrl.LoginPage)
 	r.Post("/login", userCtrl.Login)
-	r.Get("/logout", userCtrl.Logout)
+	r.Get("/logout", app.authorise(userCtrl.Logout))
 
 	r.Get("/cookietest", userCtrl.CookieTest)
 
+	csrf := nosurf.New(r)
+	csrf.ExemptPath("/dashboard")
+
 	srv := &http.Server{
 		Addr:    ":4000",
-		Handler: nosurf.New(r),
+		Handler: csrf,
 	}
 
 	err = srv.ListenAndServe()
