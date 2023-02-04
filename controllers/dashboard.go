@@ -53,13 +53,29 @@ func (d *Dashboard) Dashboard(w http.ResponseWriter, r *http.Request) {
 	d.DashView.Data.User = userID >= 0
 	d.DashView.Data.CSRFtoken = nosurf.Token(r)
 
+	var monday, sunday time.Time
+	dateStr := r.URL.Query().Get("date")
+	if dateStr == "" {
+		// set to this week
+		monday, sunday = weekBoundaries(time.Now())
+	} else {
+		// set to date week
+		date, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "There was a problem with your date", http.StatusBadRequest)
+		}
+		monday, sunday = weekBoundaries(date)
+	}
+
+	d.DashView.Data.Date = monday.Format("02 Jan 2006")
+
 	recipes, err := d.rs.GetByUser(userID)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	monday, sunday := weekBoundaries(time.Now())
 	meals, err := d.ms.ByDateRange(userID, monday, sunday)
 	if err != nil {
 		log.Println(err)
@@ -98,8 +114,9 @@ func (d *Dashboard) SaveMeals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type reqBody struct {
-		CSRF  string `json:"csrf"`
-		Meals []struct {
+		WeekStart time.Time `json:"weekStart"`
+		CSRF      string    `json:"csrf"`
+		Meals     []struct {
 			RecipeID int       `json:"recipeID"`
 			Date     time.Time `json:"date"`
 		} `json:"meals"`
@@ -116,10 +133,12 @@ func (d *Dashboard) SaveMeals(w http.ResponseWriter, r *http.Request) {
 		log.Println("csrf fail")
 	}
 
-	monday, sunday := weekBoundaries(time.Now())
+	log.Println(data.WeekStart)
+	monday, sunday := weekBoundaries(data.WeekStart)
+	log.Println(monday)
+	log.Println(sunday)
 	d.ms.DeleteInRange(userID, monday, sunday)
 
-	log.Println(data)
 	for _, m := range data.Meals {
 		err := d.ms.Create(userID, m.RecipeID, m.Date)
 		if err != nil {

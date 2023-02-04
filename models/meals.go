@@ -48,14 +48,11 @@ func (ms *mealService) Create(ownerID int, recipeID int, date time.Time) error {
 		updatedAt: time.Now().UTC(),
 	}
 
-	log.Println(meal)
-
 	err := ms.db.QueryRow("INSERT INTO meals (owner_id, recipe_id, date, created_at, updated_at) VALUES($1, $2, $3, $4, $5) RETURNING id", meal.OwnerID, meal.RecipeID, meal.Date.Format("2006-01-02"), meal.createdAt.Format(time.RFC3339), meal.updatedAt.Format(time.RFC3339)).Scan(&meal.ID)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	log.Println(meal)
 	return nil
 }
 
@@ -95,7 +92,6 @@ func (ms *mealService) ByDateRange(id int, start, end time.Time) (*[]Meal, error
 			log.Println(err)
 			return nil, err
 		}
-		log.Println(m)
 		meals = append(meals, m)
 	}
 	return &meals, nil

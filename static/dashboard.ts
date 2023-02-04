@@ -1,5 +1,5 @@
-let recipes: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>(".recipe-item");
-let dropzones: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>('.dropzone');
+let recipes = document.querySelectorAll(".recipe-item") as NodeListOf<HTMLElement>;
+let dropzones = document.querySelectorAll('.dropzone') as NodeListOf<HTMLElement>;
 let dragged: HTMLElement | null;
 
 const addNodeListeners = (node: HTMLElement) => {
@@ -69,40 +69,65 @@ dropzones.forEach((z) => {
 	});
 });
 
+
 // DATES =========================
-function setToMonday(date) {
+function setToMonday(date: Date) {
 	var day = date.getDay() || 7;
 	if (day !== 1)
 		date.setHours(-24 * (day - 1));
 	return date;
 }
 
-let date = document.getElementById("date")
-let monday = setToMonday(new Date);
-if (date) date.textContent = monday.toDateString();
+let dateElement = document.getElementById("date")
+let monday = setToMonday(new Date(Date.parse(dateElement?.textContent || "")));
+
+const changeDate = () => {
+	// const queryDate = monday.getDate() + "-" + (monday.getMonth() + 1). + "-" + monday.getFullYear()
+	const queryDate = monday.toISOString().slice(0, 10)
+	window.location.replace("/dashboard?date=" + queryDate)
+}
+
+const prevBtn = document.getElementById("prev-week") as HTMLElement
+const nextBtn = document.getElementById("next-week") as HTMLElement
+
+prevBtn.addEventListener("click", function() {
+	monday.setDate(monday.getDate() - 7)
+	changeDate()
+})
+
+nextBtn.addEventListener("click", function() {
+	monday.setDate(monday.getDate() + 7)
+	changeDate()
+})
+
 
 // SAVING MEAL PLAN =================
+type Meal = {
+	recipeID: number,
+	date: Date,
+}
 
-// Returns the list of meals with their id and day of the week
 const getMeals = () => {
-	// {recipeID: x, date: xyz}
-	let meals = []
-	dropzones.forEach((z) => {
-		z.childNodes.forEach((n) => {
-			if (!n.dataset) return;
-			let date = new Date(monday);
+	let meals: Meal[] = []
+	dropzones.forEach((z: HTMLElement) => {
+		z.childNodes.forEach((node) => {
+			let n = node as HTMLElement
+			if (!n.dataset)
+				return;
+			let date = new Date(+monday);
 			date.setDate(date.getDate() + parseInt(z.id));
-			console.log(date)
-			meals.push({ recipeID: +n.dataset.recipeid, date: date })
+
+			let rID: number = n.dataset.recipeid ? +n.dataset.recipeid : -1;
+			meals.push({ recipeID: rID, date: date })
 		})
 	})
 	return meals;
 }
 
-const saveButton = document.querySelector(".save-button")
+const saveButton = document.querySelector(".save-button") as HTMLElement
 saveButton.addEventListener("click", () => {
-	const container = document.querySelector(".dashboard-container")
+	const container = document.querySelector<HTMLElement>(".dashboard-container")
 	fetch("/dashboard", {
-		method: "POST", body: JSON.stringify({ meals: getMeals(), csrf: container.dataset.csrf })
+		method: "POST", body: JSON.stringify({ weekStart: monday, meals: getMeals(), csrf: container?.dataset.csrf })
 	})
 })

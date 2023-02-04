@@ -35,6 +35,7 @@ type Data struct {
 	User      bool
 	Recipes   []models.Recipe
 	MealMap   map[int][]MealNode // the int key represents day of the week from [0]=monday to [6]=sunday
+	Date      string
 }
 
 func layoutFiles() []string {
