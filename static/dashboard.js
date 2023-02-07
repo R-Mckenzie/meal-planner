@@ -23,6 +23,7 @@ recipes.forEach(function (r) {
     addNodeListeners(r);
 });
 var addDeleteListener = function (b) {
+    var container = document.querySelector(".dashboard-container");
     if (b.parentNode) {
         var node_1 = b.parentNode;
         b.addEventListener('click', function () {
@@ -30,7 +31,11 @@ var addDeleteListener = function (b) {
                 node_1.remove();
             }
             else {
-                console.log("delete clicked");
+                var rID = node_1.dataset.recipeid ? +node_1.dataset.recipeid : -1;
+                fetch("/recipes", {
+                    method: "DELETE", body: JSON.stringify({ recipeID: +rID, csrf: container === null || container === void 0 ? void 0 : container.dataset.csrf })
+                });
+                node_1.remove();
             }
         });
     }

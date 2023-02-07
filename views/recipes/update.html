@@ -1,0 +1,17 @@
+{{ define "yield" }}
+<div class="form-container">
+	<h1 class="center">Update {{.Recipe.Title}}</h1>
+	<p class="center fg-2">Keep your recipe up to date</p>
+	<form class="form" action="/recipes/{{.Recipe.ID}}" method="post">
+		{{ template "alert" . }}
+		<input type="hidden" name="csrf_token" value="{{ .CSRFtoken }}" />
+		<input class="text-input" type="text" placeholder="Title" value="{{.Recipe.Title}}" name="title" required />
+		<textarea required class="text-input" placeholder="Ingredients..." name="ingredients" rows="5" cols="50">
+{{range index .Recipe.Ingredients}}{{.}}
+{{end}}</textarea>
+		<textarea class="text-input" placeholder="Instructions..." name="method" rows="5" cols="50">
+{{.Recipe.Method}}</textarea>
+		<button class="button mt-1" type="submit">Save</button>
+	</form>
+</div>
+{{ end }}

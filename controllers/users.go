@@ -49,6 +49,7 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.SignupView.Data.Alert = views.Alert{Type: views.Error, Message: "There was a problem with your input"}
+
 		if err := u.SignupView.Render(w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

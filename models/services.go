@@ -19,9 +19,11 @@ type Services struct {
 	Users   UserService
 	Recipes RecipeService
 	Meals   MealService
+	iLog    *log.Logger
+	eLog    *log.Logger
 }
 
-func NewServices() (*Services, error) {
+func NewServices(iLog, eLog *log.Logger) (*Services, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable TimeZone=UTC", host, port, user, password, dbname)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
@@ -33,9 +35,9 @@ func NewServices() (*Services, error) {
 	}
 	log.Println("Successfully connected to database")
 
-	rs := NewRecipeService(db)
-	ms := NewMealService(db)
-	us, err := NewUserService(db)
+	rs := NewRecipeService(db, iLog, eLog)
+	ms := NewMealService(db, iLog, eLog)
+	us, err := NewUserService(db, iLog, eLog)
 	if err != nil {
 		return nil, err
 	}

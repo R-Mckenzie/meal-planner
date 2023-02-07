@@ -26,20 +26,25 @@ recipes.forEach((r) => {
 	addNodeListeners(r);
 });
 
-const addDeleteListener = (b: HTMLElement) => {
+var addDeleteListener = (b: HTMLElement) => {
+	const container = document.querySelector<HTMLElement>(".dashboard-container")
 	if (b.parentNode) {
 		const node: HTMLElement = b.parentNode as HTMLElement
 		b.addEventListener('click', () => {
 			if (node.classList.contains("meal-item")) {
 				node.remove()
 			} else {
-				console.log("delete clicked")
+				let rID: number = node.dataset.recipeid ? +node.dataset.recipeid : -1;
+				fetch("/recipes", {
+					method: "DELETE", body: JSON.stringify({ recipeID: +rID, csrf: container?.dataset.csrf })
+				})
+				node.remove()
 			}
 		})
 	}
 }
 
-let deleteButtons: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>(".delete-button");
+var deleteButtons: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>(".delete-button");
 deleteButtons.forEach((b) => {
 	addDeleteListener(b)
 });

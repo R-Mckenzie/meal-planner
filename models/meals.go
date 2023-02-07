@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 )
@@ -18,9 +19,6 @@ type Meal struct {
 
 type MealService interface {
 	// Methods to get meals
-	ByID(id int) (*Meal, error)                                // Get a meal by it's id
-	ByOwner(id int) (*[]Meal, error)                           // All meals from a given user
-	ByDate(id int, date time.Time) (*[]Meal, error)            // All meals from a user on a given date
 	ByDateRange(id int, start, end time.Time) (*[]Meal, error) // All meals from a user in a date range
 
 	// Methods to create meals
@@ -30,12 +28,16 @@ type MealService interface {
 }
 
 type mealService struct {
-	db *sql.DB
+	db   *sql.DB
+	iLog *log.Logger
+	eLog *log.Logger
 }
 
-func NewMealService(db *sql.DB) MealService {
+func NewMealService(db *sql.DB, iLog, eLog *log.Logger) MealService {
 	return &mealService{
-		db: db,
+		db:   db,
+		iLog: iLog,
+		eLog: eLog,
 	}
 }
 
@@ -50,14 +52,9 @@ func (ms *mealService) Create(ownerID int, recipeID int, date time.Time) error {
 
 	err := ms.db.QueryRow("INSERT INTO meals (owner_id, recipe_id, date, created_at, updated_at) VALUES($1, $2, $3, $4, $5) RETURNING id", meal.OwnerID, meal.RecipeID, meal.Date.Format("2006-01-02"), meal.createdAt.Format(time.RFC3339), meal.updatedAt.Format(time.RFC3339)).Scan(&meal.ID)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("in MealService.Create: %w", err)
 	}
 	return nil
-}
-
-func (ms *mealService) ByDate(id int, date time.Time) (*[]Meal, error) {
-	return nil, nil
 }
 
 func (ms *mealService) DeleteInRange(ownerID int, start, end time.Time) error {
@@ -68,8 +65,7 @@ func (ms *mealService) DeleteInRange(ownerID int, start, end time.Time) error {
 
 	_, err := ms.db.Exec("DELETE FROM meals WHERE date >= $1 AND date <= $2 AND owner_id = $3", s, e, ownerID)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("in MealService.DeleteInRange: %w", err)
 	}
 	return nil
 }
@@ -79,8 +75,7 @@ func (ms *mealService) ByDateRange(id int, start, end time.Time) (*[]Meal, error
 	e := end.Format("2006-01-02")
 	rows, err := ms.db.Query("SELECT * FROM meals WHERE date >= $1 AND date <= $2 AND owner_id = $3", s, e, id)
 	if err != nil {
-		log.Println(err)
-		return nil, err
+		return nil, fmt.Errorf("in MealService.ByDateRange query: %w", err)
 	}
 	defer rows.Close()
 
@@ -89,18 +84,9 @@ func (ms *mealService) ByDateRange(id int, start, end time.Time) (*[]Meal, error
 		m := Meal{}
 		err := rows.Scan(&m.ID, &m.OwnerID, &m.RecipeID, &m.Date, &m.createdAt, &m.updatedAt, &m.deletedAt)
 		if err != nil {
-			log.Println(err)
-			return nil, err
+			return nil, fmt.Errorf("in MealService.ByDateRange scanning rows: %w", err)
 		}
 		meals = append(meals, m)
 	}
 	return &meals, nil
-}
-
-func (ms *mealService) ByOwner(id int) (*[]Meal, error) {
-	return nil, nil
-}
-
-func (ms *mealService) ByID(id int) (*Meal, error) {
-	return nil, nil
 }

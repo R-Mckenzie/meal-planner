@@ -2,7 +2,7 @@
 <div class="form-container">
 	<h1 class="center">Create New Recipe</h1>
 	<p class="center fg-2">Save your recipe for later</p>
-	<form class="form" action="/recipes/create" method="post">
+	<form class="form" action="/recipes" method="post">
 		{{ template "alert" . }}
 		<input type="hidden" name="csrf_token" value="{{ .CSRFtoken }}" />
 		<input class="text-input" type="text" placeholder="Title" name="title" required />

@@ -33,6 +33,7 @@ type Data struct {
 	Alert     Alert
 	CSRFtoken string
 	User      bool
+	Recipe    models.Recipe
 	Recipes   []models.Recipe
 	MealMap   map[int][]MealNode // the int key represents day of the week from [0]=monday to [6]=sunday
 	Date      string
@@ -75,4 +76,9 @@ func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := v.Render(w); err != nil {
 		panic(err)
 	}
+}
+
+func (v *View) SetAlert(message, status string) {
+	v.Data.Alert.Message = message
+	v.Data.Alert.Type = status
 }

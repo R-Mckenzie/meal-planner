@@ -83,8 +83,6 @@ func (d *Dashboard) Dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mealMap := make(map[int][]views.MealNode)
-	log.Printf("mealmap: %+v", mealMap)
-
 	for _, m := range *meals {
 		t, err := d.rs.GetTitle(m.RecipeID)
 		if err != nil {
@@ -133,12 +131,8 @@ func (d *Dashboard) SaveMeals(w http.ResponseWriter, r *http.Request) {
 		log.Println("csrf fail")
 	}
 
-	log.Println(data.WeekStart)
 	monday, sunday := weekBoundaries(data.WeekStart)
-	log.Println(monday)
-	log.Println(sunday)
 	d.ms.DeleteInRange(userID, monday, sunday)
-
 	for _, m := range data.Meals {
 		err := d.ms.Create(userID, m.RecipeID, m.Date)
 		if err != nil {

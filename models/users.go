@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -44,29 +45,35 @@ type userDB interface {
 type userService struct {
 	userDB
 	hmac tokens.HMAC
+	iLog *log.Logger
+	eLog *log.Logger
 }
 
 type userPG struct {
 	db   *sql.DB
 	hmac tokens.HMAC
+	iLog *log.Logger
+	eLog *log.Logger
 }
 
-func newUserPG(db *sql.DB, hmac tokens.HMAC) (*userPG, error) {
+func newUserPG(db *sql.DB, hmac tokens.HMAC, iLog, eLog *log.Logger) (*userPG, error) {
 	return &userPG{
 		db:   db,
 		hmac: hmac,
 	}, nil
 }
 
-func NewUserService(db *sql.DB) (UserService, error) {
+func NewUserService(db *sql.DB, iLog, eLog *log.Logger) (UserService, error) {
 	hmac := tokens.NewHMAC(hmacSecret)
-	pgdb, err := newUserPG(db, hmac)
+	pgdb, err := newUserPG(db, hmac, iLog, eLog)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("in NewUserService: %w", err)
 	}
 	return &userService{
 		userDB: pgdb,
 		hmac:   hmac,
+		iLog:   iLog,
+		eLog:   eLog,
 	}, nil
 }
 
@@ -91,14 +98,14 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 func (us *userService) GenerateRemember(user *User) error {
 	token, err := tokens.RememberToken()
 	if err != nil {
-		return err
+		return fmt.Errorf("in UserService.GenerateRemember: %w", err)
 	}
 	rememberHash := us.hmac.Hash(token)
 	user.Remember = token
 	user.rememberHash = rememberHash
 	err = us.Update(user)
 	if err != nil {
-		return err
+		return fmt.Errorf("in UserService.GenerateRemember: %w", err)
 	}
 	return nil
 }
@@ -108,13 +115,12 @@ func (us *userService) GenerateRemember(user *User) error {
 func (pg *userPG) Create(email, password string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("in UserPG.Create: %w", err)
 	}
 
 	token, err := tokens.RememberToken()
 	if err != nil {
-		return err
+		return fmt.Errorf("in UserPG.Create: %w", err)
 	}
 	rememberHash := pg.hmac.Hash(token)
 
@@ -132,7 +138,6 @@ func (pg *userPG) Create(email, password string) error {
 	var pgErr *pq.Error
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" { // Error code for constraint violation. email must be unique
 		log.Println(err)
-		log.Println(user.rememberHash)
 		return errors.New("A user already exists with this email")
 	}
 	if err != nil {
@@ -146,7 +151,7 @@ func (pg *userPG) Update(user *User) error {
 	_, err := pg.db.Exec("UPDATE users SET email=$2, hash=$3, remember_hash=$4, updated_at=$5 WHERE id=$1",
 		user.ID, user.Email, user.passHash, user.rememberHash, time.Now().UTC().Format(time.RFC3339))
 	if err != nil {
-		return err
+		return fmt.Errorf("in UserPG.Update: %w", err)
 	}
 	return nil
 }
@@ -156,7 +161,7 @@ func (pg *userPG) ByID(id int) (*User, error) {
 	u := &User{}
 	err := row.Scan(&u.ID, &u.Email, &u.passHash, &u.createdAt, &u.updatedAt, &u.deletedAt, &u.rememberHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("in UserPG.ByID: %w", err)
 	}
 	return u, nil
 }
@@ -166,7 +171,7 @@ func (pg *userPG) ByEmail(email string) (*User, error) {
 	u := &User{}
 	err := row.Scan(&u.ID, &u.Email, &u.passHash, &u.createdAt, &u.updatedAt, &u.deletedAt, &u.rememberHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("in UserPG.ByEmail: %w", err)
 	}
 	return u, nil
 }
@@ -181,7 +186,7 @@ func (pg *userPG) ByRemember(remember string) (*User, error) {
 	u := &User{}
 	err := row.Scan(&u.ID, &u.Email, &u.passHash, &u.createdAt, &u.updatedAt, &u.deletedAt, &u.rememberHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("in UserPG.ByRemember: %w", err)
 	}
 	return u, nil
 }

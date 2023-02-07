@@ -111,6 +111,7 @@ table "recipes" {
 	foreign_key "recipe_owner_fk"{
 		columns = [column.owner_id]	
 		ref_columns = [table.users.column.id]
+		on_delete = CASCADE
 	}
 }
 
