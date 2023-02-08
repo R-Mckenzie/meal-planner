@@ -59,8 +59,6 @@ func main() {
 	r.Post("/login", app.ctrl.Users.Login)
 	r.Get("/logout", app.authorise(app.ctrl.Users.Logout))
 
-	r.Get("/cookietest", app.ctrl.Users.CookieTest)
-
 	csrf := nosurf.New(r)
 	csrf.ExemptPath("/dashboard")
 	csrf.ExemptPath("/recipes")

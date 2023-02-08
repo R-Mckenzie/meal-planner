@@ -33,34 +33,34 @@ func NewUsers(us models.UserService) *User {
 
 func (u *User) SignupPage(w http.ResponseWriter, r *http.Request) {
 	u.SignupView.Data.User = r.Context().Value("mealplanner_current_user").(int) >= 0
-	u.SignupView.Data.Alert = views.Alert{Type: views.Success, Message: ""}
+	u.SignupView.SetAlert("", views.Success)
 	u.SignupView.Data.CSRFtoken = nosurf.Token(r)
 
-	if r.URL.Query().Get("success") == "true" {
-		u.SignupView.Data.Alert.Message = "Successfully created user"
-	}
-	err := u.SignupView.Render(w)
+	m, t, err := getAlertData(w, r)
 	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+	}
+	u.SignupView.SetAlert(m, t)
+
+	if err = u.SignupView.Render(w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.SignupView.Data.Alert = views.Alert{Type: views.Error, Message: "There was a problem with your input"}
+	u.SignupView.Data.User = r.Context().Value("mealplanner_current_user").(int) >= 0
 
+	email, pass, err := parseUserForm(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.SignupView.SetAlert("There was a problem with your input", views.Error)
 		if err := u.SignupView.Render(w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		return
 	}
 
-	email := r.PostForm["email"][0]
-	password := r.PostForm["password"][0]
-
-	email = strings.ToLower(email)
-	valid, faults := validation.PasswordCheck(password)
+	// Validate the data
+	valid, faults := validation.PasswordCheck(pass)
 	validEmail := validation.IsEmail(email)
 	if !validEmail {
 		faults = append(faults, "Must be a valid email")
@@ -68,7 +68,7 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 	message := strings.Join(faults, "\n")
 
 	if !valid || !validEmail {
-		u.SignupView.Data.Alert = views.Alert{Type: views.Error, Message: message}
+		u.SignupView.SetAlert(message, views.Error)
 		err := u.SignupView.Render(w)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -76,31 +76,33 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := u.us.Create(email, password); err != nil {
+	// Create the user
+	if err := u.us.Create(email, pass); err != nil {
 		w.WriteHeader(http.StatusConflict)
 		u.SignupView.Data.Alert = views.Alert{Type: views.Error, Message: err.Error()}
 		if err := u.SignupView.Render(w); err != nil {
-			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
 	}
-	http.Redirect(w, r, "/signup?success=true", http.StatusSeeOther)
+	setAlertData(w, fmt.Sprintf("Successfully added user %q", email), views.Success)
+	http.Redirect(w, r, "/signup", http.StatusSeeOther)
 }
 
 func (u *User) LoginPage(w http.ResponseWriter, r *http.Request) {
 	u.LoginView.Data.User = r.Context().Value("mealplanner_current_user").(int) >= 0
-	u.LoginView.Data.Alert = views.Alert{Type: views.Error, Message: ""}
 	u.LoginView.Data.CSRFtoken = nosurf.Token(r)
-	err := u.LoginView.Render(w)
-	if err != nil {
-		panic(err)
+	u.LoginView.SetAlert("", views.Success)
+	if err := u.LoginView.Render(w); err != nil {
+		http.Error(w, "There was a problem...", http.StatusInternalServerError)
 	}
 }
 
 func (u *User) Login(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		u.LoginView.Data.Alert = views.Alert{Type: views.Error, Message: "There was a problem with your input"}
+	// Parse form
+	email, pass, err := parseUserForm(r)
+	if err != nil {
+		u.LoginView.SetAlert("There was a problem with your input", views.Error)
 		w.WriteHeader(http.StatusBadRequest)
 		if err := u.LoginView.Render(w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -108,12 +110,11 @@ func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := r.PostForm["email"][0]
-	password := r.PostForm["password"][0]
-	user, err := u.us.Authenticate(email, password)
+	// Authenticate user
+	user, err := u.us.Authenticate(email, pass)
 	if err != nil {
 		log.Println(err)
-		u.LoginView.Data.Alert = views.Alert{Type: views.Error, Message: err.Error()}
+		u.LoginView.SetAlert(err.Error(), views.Error)
 		w.WriteHeader(http.StatusUnauthorized)
 		if err := u.LoginView.Render(w); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -122,45 +123,54 @@ func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a new remember token for the user on every login
-	rToken, err := r.Cookie("remember_token")
+	err = u.updateRememberToken(w, user)
 	if err != nil {
-		user.Remember = ""
-	} else {
-		user.Remember = rToken.Value
+		log.Printf(err.Error())
+		http.Error(w, "Problem updated remember cookie", http.StatusInternalServerError)
+		return
 	}
-	err = u.us.GenerateRemember(user)
-	cookie := http.Cookie{
-		Name:     "remember_token",
-		Value:    user.Remember,
-		HttpOnly: true,
-	}
-	if err != nil {
-		log.Println("Problem generating remember token: ", err)
-	}
-	http.SetCookie(w, &cookie)
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (u *User) Logout(w http.ResponseWriter, r *http.Request) {
+	clearRememberCookie(w)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+func parseUserForm(r *http.Request) (string, string, error) {
+	if err := r.ParseForm(); err != nil {
+		return "", "", err
+	}
+
+	email := r.PostForm["email"][0]
+	password := r.PostForm["password"][0]
+	email = strings.ToLower(email)
+
+	return email, password, nil
+}
+
+// ===== HELPERS =====
+
+func (uc *User) updateRememberToken(w http.ResponseWriter, u *models.User) error {
+	if err := uc.us.GenerateRemember(u); err != nil {
+		log.Println("Problem generating remember token: ", err)
+		return err
+	}
+	cookie := &http.Cookie{
+		Name:     "remember_token",
+		Value:    u.Remember,
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, cookie)
+	return nil
+}
+
+func clearRememberCookie(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "remember_token",
 		Value:    "",
 		MaxAge:   -1,
 		HttpOnly: true,
 	})
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
-}
-
-func (u *User) CookieTest(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("remember_token")
-	if err != nil {
-		http.Error(w, "There was a problem identifying yo,", http.StatusInternalServerError)
-		return
-	}
-
-	user, err := u.us.ByRemember(cookie.Value)
-	if err != nil {
-		log.Printf("Problem finding user by remember token %q. %v\n", cookie.Value, err)
-	}
-	w.Write([]byte(fmt.Sprintf("%+v", user)))
 }

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -99,6 +100,12 @@ func (d *Dashboard) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	d.DashView.Data.MealMap = mealMap
 	d.DashView.Data.Recipes = recipes
+
+	m, t, err := getAlertData(w, r)
+	if err != nil {
+		panic(err)
+	}
+	d.DashView.SetAlert(m, t)
 	if err := d.DashView.Render(w); err != nil {
 		panic(err)
 	}
@@ -124,11 +131,13 @@ func (d *Dashboard) SaveMeals(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	ok = nosurf.VerifyToken(nosurf.Token(r), data.CSRF)
 	if !ok {
 		log.Println("csrf fail")
+		return
 	}
 
 	monday, sunday := weekBoundaries(data.WeekStart)
@@ -141,6 +150,5 @@ func (d *Dashboard) SaveMeals(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	//success message
-	log.Println("success")
+	setAlertData(w, fmt.Sprintf("Saved week beginning %s", monday.Format("January 02")), views.Success)
 }

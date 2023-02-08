@@ -115,5 +115,5 @@ saveButton.addEventListener("click", function () {
     var container = document.querySelector(".dashboard-container");
     fetch("/dashboard", {
         method: "POST", body: JSON.stringify({ weekStart: monday, meals: getMeals(), csrf: container === null || container === void 0 ? void 0 : container.dataset.csrf })
-    });
+    }).then(function () { return location.reload(); });
 });

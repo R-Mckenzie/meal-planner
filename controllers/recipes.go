@@ -58,28 +58,22 @@ func (re *Recipe) CreatePage(w http.ResponseWriter, r *http.Request) {
 func (re *Recipe) Create(w http.ResponseWriter, r *http.Request) {
 	ok := r.Context().Value("mealplanner_current_user").(int) >= 0
 	if !ok {
-		log.Println("user not authenticated")
+		http.Error(w, "user not authenticated", http.StatusForbidden)
 		return
 	}
 
-	if err := r.ParseForm(); err != nil {
-		log.Println(err)
-		re.CreateView.SetAlert("There was a problem adding your recipe", views.Error)
+	formData, err := parseForm(r)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		re.CreateView.SetAlert("There was a problem adding your recipe", views.Error)
 		if err := re.CreateView.Render(w); err != nil {
 			panic(err)
 		}
 		return
 	}
 
-	formData := RecipeForm{
-		Title:       r.PostForm["title"][0],
-		Ingredients: parseIngredients(r.PostForm["ingredients"][0]),
-		Method:      r.PostForm["method"][0],
-	}
-
 	userID := r.Context().Value("mealplanner_current_user").(int)
-	err := re.rs.Create(userID, formData.Title, formData.Method, formData.Ingredients)
+	err = re.rs.Create(userID, formData.Title, formData.Method, formData.Ingredients)
 	if err != nil {
 		log.Println(err)
 		re.CreateView.SetAlert("There was a problem adding your recipe", views.Error)
@@ -97,7 +91,7 @@ func (re *Recipe) Create(w http.ResponseWriter, r *http.Request) {
 func (re *Recipe) ListPage(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value("mealplanner_current_user").(int)
 	if !ok {
-		log.Println("user not authenticated")
+		http.Error(w, "user not authenticated", http.StatusForbidden)
 		return
 	}
 	re.ListView.Data.User = userID >= 0
@@ -114,18 +108,19 @@ func (re *Recipe) ListPage(w http.ResponseWriter, r *http.Request) {
 	if err := re.ListView.Render(w); err != nil {
 		http.Error(w, "There was an error getting the page", http.StatusInternalServerError)
 		log.Println(err)
+		return
 	}
 }
 
 func (re *Recipe) UpdatePage(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value("mealplanner_current_user").(int)
 	if !ok {
-		log.Println("user not authenticated")
+		http.Error(w, "user not authenticated", http.StatusForbidden)
 		return
 	}
 	re.UpdateView.Data.User = userID >= 0
 	re.UpdateView.Data.CSRFtoken = nosurf.Token(r)
-	re.UpdateView.Data.Alert.Message = ""
+	re.UpdateView.SetAlert("", views.Success)
 
 	recipeID := chi.URLParam(r, "recipeID")
 	if recipeID == "" {
@@ -149,7 +144,9 @@ func (re *Recipe) UpdatePage(w http.ResponseWriter, r *http.Request) {
 	m, t, err := getAlertData(w, r)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
 	}
+
 	re.UpdateView.SetAlert(m, t)
 	if err := re.UpdateView.Render(w); err != nil {
 		panic(err)
@@ -159,32 +156,21 @@ func (re *Recipe) UpdatePage(w http.ResponseWriter, r *http.Request) {
 func (re *Recipe) Update(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value("mealplanner_current_user").(int)
 	if !ok || userID < 0 {
-		log.Println("user not authenticated")
+		http.Error(w, "user not authenticated", http.StatusForbidden)
 		return
 	}
 
-	if err := r.ParseForm(); err != nil {
-		log.Println(err)
+	formData, err := parseForm(r)
+	if err != nil {
 		re.UpdateView.SetAlert("There was a problem adding your recipe", views.Error)
-		w.WriteHeader(http.StatusBadRequest)
 		if err := re.UpdateView.Render(w); err != nil {
 			panic(err)
 		}
-		return
 	}
-
-	formData := RecipeForm{
-		Title:       r.PostForm["title"][0],
-		Ingredients: parseIngredients(r.PostForm["ingredients"][0]),
-		Method:      r.PostForm["method"][0],
-	}
-
 	recipe := re.UpdateView.Data.Recipe
-	recipe.Title = formData.Title
-	recipe.Method = formData.Method
-	recipe.Ingredients = formData.Ingredients
+	recipe.Title, recipe.Method, recipe.Ingredients = formData.Title, formData.Method, formData.Ingredients
 
-	err := re.rs.Update(recipe)
+	err = re.rs.Update(recipe)
 	if err != nil {
 		log.Println(err)
 		re.UpdateView.SetAlert("There was a problem adding your recipe", views.Error)
@@ -202,6 +188,18 @@ func (re *Recipe) Update(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, rURL, http.StatusSeeOther)
 }
 
+func parseForm(r *http.Request) (*RecipeForm, error) {
+	if err := r.ParseForm(); err != nil {
+		return nil, err
+	}
+
+	return &RecipeForm{
+		Title:       r.PostForm["title"][0],
+		Ingredients: parseIngredients(r.PostForm["ingredients"][0]),
+		Method:      r.PostForm["method"][0],
+	}, nil
+}
+
 func parseIngredients(text string) []string {
 	split := strings.Split(text, "\n")
 	var cleaned []string
@@ -214,7 +212,7 @@ func parseIngredients(text string) []string {
 func (re *Recipe) Delete(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value("mealplanner_current_user").(int)
 	if userID < 0 {
-		log.Println("user not authenticated")
+		http.Error(w, "user not authenticated", http.StatusForbidden)
 		return
 	}
 

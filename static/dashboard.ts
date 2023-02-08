@@ -134,5 +134,5 @@ saveButton.addEventListener("click", () => {
 	const container = document.querySelector<HTMLElement>(".dashboard-container")
 	fetch("/dashboard", {
 		method: "POST", body: JSON.stringify({ weekStart: monday, meals: getMeals(), csrf: container?.dataset.csrf })
-	})
+	}).then(() => location.reload())
 })
