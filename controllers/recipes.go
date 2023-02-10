@@ -18,6 +18,7 @@ type RecipeForm struct {
 	Title       string
 	Ingredients []string
 	Method      string
+	returnAddr  string
 }
 
 func NewRecipes(rs models.RecipeService) *Recipe {
@@ -41,14 +42,12 @@ func (re *Recipe) CreatePage(w http.ResponseWriter, r *http.Request) {
 	re.CreateView.Data.User = r.Context().Value("mealplanner_current_user").(int) >= 0
 	re.CreateView.Data.CSRFtoken = nosurf.Token(r)
 	re.CreateView.Data.Alert.Message = ""
-
 	m, t, err := getAlertData(w, r)
 	if err != nil {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
 	re.CreateView.SetAlert(m, t)
-
 	if err := re.CreateView.Render(w); err != nil {
 		panic(err)
 	}
@@ -56,7 +55,7 @@ func (re *Recipe) CreatePage(w http.ResponseWriter, r *http.Request) {
 
 // Adds a new recipe to the db
 func (re *Recipe) Create(w http.ResponseWriter, r *http.Request) {
-	ok := r.Context().Value("mealplanner_current_user").(int) >= 0
+	userID, ok := r.Context().Value("mealplanner_current_user").(int)
 	if !ok {
 		http.Error(w, "user not authenticated", http.StatusForbidden)
 		return
@@ -72,7 +71,6 @@ func (re *Recipe) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := r.Context().Value("mealplanner_current_user").(int)
 	err = re.rs.Create(userID, formData.Title, formData.Method, formData.Ingredients)
 	if err != nil {
 		log.Println(err)
@@ -85,7 +83,14 @@ func (re *Recipe) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	setAlertData(w, fmt.Sprintf("Successfuly added your %q recipe", formData.Title), views.Success)
-	http.Redirect(w, r, "/recipes/create", http.StatusSeeOther)
+	switch formData.returnAddr {
+	case "dashboard":
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	case "list":
+		http.Redirect(w, r, "/recipes", http.StatusSeeOther)
+	default:
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	}
 }
 
 func (re *Recipe) ListPage(w http.ResponseWriter, r *http.Request) {
@@ -104,6 +109,12 @@ func (re *Recipe) ListPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	m, t, err := getAlertData(w, r)
+	if err != nil {
+		panic(err)
+	}
+
+	re.ListView.SetAlert(m, t)
 	re.ListView.Data.Recipes = recipes
 	if err := re.ListView.Render(w); err != nil {
 		http.Error(w, "There was an error getting the page", http.StatusInternalServerError)
@@ -182,7 +193,6 @@ func (re *Recipe) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	re.UpdateView.Data.Recipe = recipe
-
 	setAlertData(w, fmt.Sprintf("Successfuly updated your %q recipe", formData.Title), views.Success)
 	rURL := fmt.Sprintf("/recipes/%d", recipe.ID)
 	http.Redirect(w, r, rURL, http.StatusSeeOther)
@@ -197,6 +207,7 @@ func parseForm(r *http.Request) (*RecipeForm, error) {
 		Title:       r.PostForm["title"][0],
 		Ingredients: parseIngredients(r.PostForm["ingredients"][0]),
 		Method:      r.PostForm["method"][0],
+		returnAddr:  r.PostForm["return_url"][0],
 	}, nil
 }
 

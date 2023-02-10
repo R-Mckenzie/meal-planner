@@ -5,11 +5,13 @@
 	<form class="form" action="/recipes" method="post">
 		{{ template "alert" . }}
 		<input type="hidden" name="csrf_token" value="{{ .CSRFtoken }}" />
+		<input type="hidden" id="return_url" name="return_url" value="dashboard" />
 		<input class="text-input" type="text" placeholder="Title" name="title" required />
 		<textarea required class="text-input" placeholder="Ingredients..." name="ingredients" rows="5"
 			cols="50"></textarea>
 		<textarea class="text-input" placeholder="Instructions..." name="method" rows="5" cols="50"></textarea>
 		<button class="button mt-1" type="submit">Submit</button>
 	</form>
+	<script type="text/javascript" src="../static/createRecipe.js"></script>
 </div>
 {{ end }}

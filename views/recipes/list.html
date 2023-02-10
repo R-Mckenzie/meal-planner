@@ -3,6 +3,7 @@
 	<h1 class="center">Recipes</h1><br>
 	<div class="vh-70 card w-40 mt-1">
 		<div class="recipe-list">
+			{{ template "alert" . }}
 			{{ range .Recipes }}
 			<div class="recipe-item" data-recipeID="{{.ID}}">
 				{{.Title}}
@@ -10,7 +11,7 @@
 			</div>
 			{{ end }}
 		</div>
-		<a href="/recipes/create" class="button newrecipe-button">New Recipe</a>
+		<a href="/recipes/create?returnto=list" class="button newrecipe-button">New Recipe</a>
 	</div>
 </div>
 <script type="text/javascript" src="./static/recipeList.js"></script>
