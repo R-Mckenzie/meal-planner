@@ -68,6 +68,6 @@ func main() {
 		Handler: csrf,
 	}
 
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	log.Fatal(err)
 }
