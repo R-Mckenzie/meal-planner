@@ -16,6 +16,8 @@ type User struct {
 	SignupView *views.View
 	LoginView  *views.View
 	us         models.UserService
+	iLog       *log.Logger
+	eLog       *log.Logger
 }
 
 type SignupForm struct {
@@ -23,11 +25,13 @@ type SignupForm struct {
 	password string
 }
 
-func NewUsers(us models.UserService) *User {
+func NewUsers(us models.UserService, iLog, eLog *log.Logger) *User {
 	return &User{
 		SignupView: views.NewView("root", "views/users/signup.html"),
 		LoginView:  views.NewView("root", "views/users/login.html"),
 		us:         us,
+		iLog:       iLog,
+		eLog:       eLog,
 	}
 }
 
@@ -38,11 +42,13 @@ func (u *User) SignupPage(w http.ResponseWriter, r *http.Request) {
 
 	m, t, err := getAlertData(w, r)
 	if err != nil {
+		u.eLog.Println("in SignupPage getting alert data: ", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 	}
 	u.SignupView.SetAlert(m, t)
 
 	if err = u.SignupView.Render(w); err != nil {
+		u.eLog.Println("in SignupPage rendering view: ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -52,9 +58,11 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 
 	email, pass, err := parseUserForm(r)
 	if err != nil {
+		u.eLog.Println("in SignupPage parsing form: ", err)
 		w.WriteHeader(http.StatusBadRequest)
 		u.SignupView.SetAlert("There was a problem with your input", views.Error)
 		if err := u.SignupView.Render(w); err != nil {
+			u.eLog.Println("in SignupPage rendering view: ", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -69,8 +77,8 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 
 	if !valid || !validEmail {
 		u.SignupView.SetAlert(message, views.Error)
-		err := u.SignupView.Render(w)
-		if err != nil {
+		if err := u.SignupView.Render(w); err != nil {
+			u.eLog.Println("in SignupPage rendering view: ", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
@@ -78,9 +86,11 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 
 	// Create the user
 	if err := u.us.Create(email, pass); err != nil {
+		u.eLog.Println("in SignupPage creating new user: ", err)
 		w.WriteHeader(http.StatusConflict)
 		u.SignupView.Data.Alert = views.Alert{Type: views.Error, Message: err.Error()}
 		if err := u.SignupView.Render(w); err != nil {
+			u.eLog.Println("in SignupPage rendering view: ", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return

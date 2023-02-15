@@ -21,12 +21,14 @@ type RecipeForm struct {
 	returnAddr  string
 }
 
-func NewRecipes(rs models.RecipeService) *Recipe {
+func NewRecipes(rs models.RecipeService, iLog, eLog *log.Logger) *Recipe {
 	return &Recipe{
 		CreateView: views.NewView("root", "views/recipes/create.html"),
 		UpdateView: views.NewView("root", "views/recipes/update.html"),
 		ListView:   views.NewView("root", "views/recipes/list.html"),
 		rs:         rs,
+		iLog:       iLog,
+		eLog:       eLog,
 	}
 }
 
@@ -35,6 +37,8 @@ type Recipe struct {
 	UpdateView *views.View
 	ListView   *views.View
 	rs         models.RecipeService
+	iLog       *log.Logger
+	eLog       *log.Logger
 }
 
 // shows the create recipe page

@@ -15,9 +15,6 @@ func setAlertData(w http.ResponseWriter, message string, status string) {
 
 func getAlertData(w http.ResponseWriter, r *http.Request) (string, string, error) {
 	message, err := getFlash(w, r, "alert_message")
-	if err != nil {
-		return "", "", err
-	}
 	status, err := getFlash(w, r, "alert_type")
 	if err != nil {
 		return "", "", err
@@ -43,6 +40,7 @@ func getFlash(w http.ResponseWriter, r *http.Request, name string) ([]byte, erro
 	if err != nil {
 		return nil, err
 	}
+
 	dc := &http.Cookie{Name: name, MaxAge: -1, Expires: time.Unix(1, 0)}
 	http.SetCookie(w, dc)
 	return value, nil

@@ -18,15 +18,19 @@ type Dashboard struct {
 	ms       models.MealService
 	us       models.UserService
 	week     time.Time
+	iLog     *log.Logger
+	eLog     *log.Logger
 }
 
-func NewDashboard(rs models.RecipeService, ms models.MealService, us models.UserService) *Dashboard {
+func NewDashboard(rs models.RecipeService, ms models.MealService, us models.UserService, iLog, eLog *log.Logger) *Dashboard {
 	return &Dashboard{
 		DashView: views.NewView("root", "views/dashboard/dashboard.html"),
 		rs:       rs,
 		ms:       ms,
 		us:       us,
 		week:     time.Now(),
+		iLog:     iLog,
+		eLog:     eLog,
 	}
 }
 
