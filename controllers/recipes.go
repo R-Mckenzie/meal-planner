@@ -77,7 +77,7 @@ func (re *Recipe) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = re.rs.Create(userID, formData.Title, formData.Method, formData.Ingredients)
 	if err != nil {
-		log.Println(err)
+		re.eLog.Println("when creating recipe: ", err)
 		re.CreateView.SetAlert("There was a problem adding your recipe", views.Error)
 		w.WriteHeader(http.StatusInternalServerError)
 		if err := re.CreateView.Render(w); err != nil {
@@ -105,24 +105,22 @@ func (re *Recipe) ListPage(w http.ResponseWriter, r *http.Request) {
 	}
 	re.ListView.Data.User = userID >= 0
 	re.ListView.Data.CSRFtoken = nosurf.Token(r)
-	re.ListView.Data.Alert.Message = ""
-
-	recipes, err := re.rs.GetByUser(userID)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	m, t, err := getAlertData(w, r)
 	if err != nil {
 		panic(err)
+	}
+
+	recipes, err := re.rs.GetByUser(userID)
+	if err != nil {
+		re.eLog.Println("in listPage: ", err)
+		return
 	}
 
 	re.ListView.SetAlert(m, t)
 	re.ListView.Data.Recipes = recipes
 	if err := re.ListView.Render(w); err != nil {
 		http.Error(w, "There was an error getting the page", http.StatusInternalServerError)
-		log.Println(err)
+		re.eLog.Println("when rendering ListPage: ", err)
 		return
 	}
 }
@@ -151,18 +149,16 @@ func (re *Recipe) UpdatePage(w http.ResponseWriter, r *http.Request) {
 
 	recipe, err := re.rs.GetByID(id, userID)
 	if err != nil {
-		log.Println(err)
+		re.eLog.Println("when getting recipe for updatePage: ", err)
 		return
 	}
 	re.UpdateView.Data.Recipe = *recipe
 
-	m, t, err := getAlertData(w, r)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
-	re.UpdateView.SetAlert(m, t)
 	if err := re.UpdateView.Render(w); err != nil {
 		panic(err)
 	}
@@ -179,6 +175,7 @@ func (re *Recipe) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		re.UpdateView.SetAlert("There was a problem adding your recipe", views.Error)
 		if err := re.UpdateView.Render(w); err != nil {
+			re.eLog.Printf("in recipeController.Update parse form: %v", err)
 			panic(err)
 		}
 	}
@@ -187,7 +184,7 @@ func (re *Recipe) Update(w http.ResponseWriter, r *http.Request) {
 
 	err = re.rs.Update(recipe)
 	if err != nil {
-		log.Println(err)
+		re.eLog.Printf("in recipeController.Update calling recipe service: %v", err)
 		re.UpdateView.SetAlert("There was a problem adding your recipe", views.Error)
 		w.WriteHeader(http.StatusInternalServerError)
 		if err := re.UpdateView.Render(w); err != nil {
@@ -198,8 +195,7 @@ func (re *Recipe) Update(w http.ResponseWriter, r *http.Request) {
 
 	re.UpdateView.Data.Recipe = recipe
 	setAlertData(w, fmt.Sprintf("Successfuly updated your %q recipe", formData.Title), views.Success)
-	rURL := fmt.Sprintf("/recipes/%d", recipe.ID)
-	http.Redirect(w, r, rURL, http.StatusSeeOther)
+	http.Redirect(w, r, "/recipes", http.StatusSeeOther)
 }
 
 func parseForm(r *http.Request) (*RecipeForm, error) {
@@ -207,11 +203,17 @@ func parseForm(r *http.Request) (*RecipeForm, error) {
 		return nil, err
 	}
 
+	input, ok := r.PostForm["return_url"]
+	addr := "list"
+	if ok {
+		addr = input[0]
+	}
+
 	return &RecipeForm{
 		Title:       r.PostForm["title"][0],
 		Ingredients: parseIngredients(r.PostForm["ingredients"][0]),
 		Method:      r.PostForm["method"][0],
-		returnAddr:  r.PostForm["return_url"][0],
+		returnAddr:  addr,
 	}, nil
 }
 
@@ -239,13 +241,13 @@ func (re *Recipe) Delete(w http.ResponseWriter, r *http.Request) {
 	b := body{}
 	err := json.NewDecoder(r.Body).Decode(&b)
 	if err != nil {
-		log.Println(err)
+		re.eLog.Println("when decoding json: ", err)
 		return
 	}
 
 	ok = nosurf.VerifyToken(nosurf.Token(r), b.CSRF)
 	if !ok {
-		log.Println("csrf fail")
+		re.iLog.Println("csrf fail")
 	}
 
 	re.rs.Delete(b.ID, userID)

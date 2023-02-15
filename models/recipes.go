@@ -57,6 +57,7 @@ func (rs *recipeService) Update(recipe Recipe) error {
 	_, err := rs.db.Exec("UPDATE recipes SET title=$2, ingredients=$3, method=$4, updated_at=$5 WHERE id=$1",
 		recipe.ID, recipe.Title, recipe.Ingredients, recipe.Method, time.Now().UTC().Format(time.RFC3339))
 	if err != nil {
+		rs.eLog.Printf("in recipeService.Update: %v", err)
 		return fmt.Errorf("in RecipeService.Update: %w", err)
 	}
 	return nil

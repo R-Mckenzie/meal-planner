@@ -61,7 +61,6 @@ func main() {
 
 	csrf := nosurf.New(r)
 	csrf.ExemptPath("/dashboard")
-	csrf.ExemptPath("/recipes")
 
 	srv := &http.Server{
 		Addr:    ":4000",
