@@ -36,6 +36,7 @@ type userDB interface {
 	ByID(id int) (*User, error)
 	ByEmail(email string) (*User, error)
 	ByRemember(token string) (*User, error)
+
 	// Methods for editing a user
 	Create(email, password string) error
 	Update(user *User) error
@@ -77,21 +78,23 @@ func NewUserService(db *sql.DB, iLog, eLog *log.Logger) (UserService, error) {
 	}, nil
 }
 
-//=== USER SERVICE
-
+// === USER SERVICE
 func (us *userService) Authenticate(email, password string) (*User, error) {
 	user, err := us.userDB.ByEmail(email)
 	if err != nil {
+		us.eLog.Printf("tried to authenticate %q, but there is no stored user with this email\n", email)
 		return nil, errors.New("No user found with email " + email)
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.passHash), []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			us.eLog.Printf("tried to authenticate %q, but the given password hash does not match\n", email)
 			return nil, errors.New("The password you have entered is incorrect")
 		}
 		return nil, errors.New("There was a problem logging you in")
 	}
+	us.iLog.Printf("User %q authenticated\n", email)
 	return user, nil
 }
 
@@ -110,8 +113,7 @@ func (us *userService) GenerateRemember(user *User) error {
 	return nil
 }
 
-//=== DB SERVICE
-
+// === DB SERVICE
 func (pg *userPG) Create(email, password string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
@@ -144,6 +146,8 @@ func (pg *userPG) Create(email, password string) error {
 		log.Println(err)
 		return errors.New("There was a problem signing you up")
 	}
+
+	pg.iLog.Printf("User %q created\n", email)
 	return nil
 }
 
@@ -153,6 +157,7 @@ func (pg *userPG) Update(user *User) error {
 	if err != nil {
 		return fmt.Errorf("in UserPG.Update: %w", err)
 	}
+	pg.iLog.Printf("User %q updated\n", user.Email)
 	return nil
 }
 
@@ -163,6 +168,7 @@ func (pg *userPG) ByID(id int) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("in UserPG.ByID: %w", err)
 	}
+	pg.iLog.Printf("Retrieved user %q by ID %d\n", u.Email, id)
 	return u, nil
 }
 
@@ -173,6 +179,7 @@ func (pg *userPG) ByEmail(email string) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("in UserPG.ByEmail: %w", err)
 	}
+	pg.iLog.Printf("Retrieved user %q by email\n", u.Email)
 	return u, nil
 }
 
@@ -188,5 +195,6 @@ func (pg *userPG) ByRemember(remember string) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("in UserPG.ByRemember: %w", err)
 	}
+	pg.iLog.Printf("Retrieved user %q by remember token\n", u.Email)
 	return u, nil
 }

@@ -54,6 +54,7 @@ func (ms *mealService) Create(ownerID int, recipeID int, date time.Time) error {
 	if err != nil {
 		return fmt.Errorf("in MealService.Create: %w", err)
 	}
+	ms.iLog.Printf("User %d created new meal on date %s with recipe %q", ownerID, date.Format("2006-01-02"), recipeID)
 	return nil
 }
 
@@ -65,13 +66,14 @@ func (ms *mealService) DeleteInRange(ownerID int, start, end time.Time) error {
 	if err != nil {
 		return fmt.Errorf("in MealService.DeleteInRange: %w", err)
 	}
+	ms.iLog.Printf("User %d deleted meals between %s and %s", ownerID, s, e)
 	return nil
 }
 
-func (ms *mealService) ByDateRange(id int, start, end time.Time) (*[]Meal, error) {
+func (ms *mealService) ByDateRange(ownerID int, start, end time.Time) (*[]Meal, error) {
 	s := start.Format("2006-01-02")
 	e := end.Format("2006-01-02")
-	rows, err := ms.db.Query("SELECT * FROM meals WHERE date >= $1 AND date <= $2 AND owner_id = $3", s, e, id)
+	rows, err := ms.db.Query("SELECT * FROM meals WHERE date >= $1 AND date <= $2 AND owner_id = $3", s, e, ownerID)
 	if err != nil {
 		return nil, fmt.Errorf("in MealService.ByDateRange query: %w", err)
 	}
@@ -86,5 +88,6 @@ func (ms *mealService) ByDateRange(id int, start, end time.Time) (*[]Meal, error
 		}
 		meals = append(meals, m)
 	}
+	ms.iLog.Printf("User %d retrieved meals between %s and %s", ownerID, s, e)
 	return &meals, nil
 }

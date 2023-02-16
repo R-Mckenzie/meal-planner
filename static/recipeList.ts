@@ -4,7 +4,8 @@ deleteButtons.forEach((b) => {
 	const csrfToken = document.querySelector<HTMLElement>("#recipesList")?.dataset.csrf
 	if (b.parentNode) {
 		const node: HTMLElement = b.parentNode as HTMLElement
-		b.addEventListener('click', () => {
+		b.addEventListener('click', (event) => {
+			event.stopPropagation()
 			let rID: number = node.dataset.recipeid ? +node.dataset.recipeid : -1;
 			fetch("/recipes/delete", {
 				method: "DELETE", body: JSON.stringify({ recipeID: +rID, csrf: csrfToken })

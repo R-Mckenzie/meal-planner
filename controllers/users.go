@@ -95,6 +95,7 @@ func (u *User) Signup(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	u.iLog.Printf("Successfully signed up user %q", email)
 	setAlertData(w, fmt.Sprintf("Successfully added user %q", email), views.Success)
 	http.Redirect(w, r, "/signup", http.StatusSeeOther)
 }
@@ -139,11 +140,24 @@ func (u *User) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Problem updated remember cookie", http.StatusInternalServerError)
 		return
 	}
+
+	u.iLog.Printf("User %q logged in", email)
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (u *User) Logout(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value("mealplanner_current_user").(int)
+	if !ok {
+		return
+	}
+
+	user, err := u.us.ByID(userID)
+	if err != nil {
+		u.eLog.Println("in logout, could not get user by ID: ", err)
+	}
+
 	clearRememberCookie(w)
+	u.iLog.Printf("User %q logged out", user.Email)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 

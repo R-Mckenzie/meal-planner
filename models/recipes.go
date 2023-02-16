@@ -50,6 +50,7 @@ func (rs *recipeService) Create(ownerID int, title, method string, ingredients [
 	if err != nil {
 		return fmt.Errorf("in RecipeService.Create: %w", err)
 	}
+	rs.iLog.Printf("User %d created recipe %q", ownerID, title)
 	return nil
 }
 
@@ -60,6 +61,7 @@ func (rs *recipeService) Update(recipe Recipe) error {
 		rs.eLog.Printf("in recipeService.Update: %v", err)
 		return fmt.Errorf("in RecipeService.Update: %w", err)
 	}
+	rs.iLog.Printf("User %d updated recipe %q", recipe.OwnerId, recipe.Title)
 	return nil
 }
 
@@ -102,6 +104,7 @@ func (rs *recipeService) GetByUser(ownerId int) ([]Recipe, error) {
 		}
 		recipes = append(recipes, r)
 	}
+	rs.iLog.Printf("Retrieved recipes for User %d", ownerId)
 	return recipes, nil
 }
 
