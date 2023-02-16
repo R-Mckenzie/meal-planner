@@ -7,7 +7,7 @@ deleteButtons.forEach(function (b) {
         var node_1 = b.parentNode;
         b.addEventListener('click', function () {
             var rID = node_1.dataset.recipeid ? +node_1.dataset.recipeid : -1;
-            fetch("/recipes", {
+            fetch("/recipes/delete", {
                 method: "DELETE", body: JSON.stringify({ recipeID: +rID, csrf: csrfToken })
             });
             node_1.remove();

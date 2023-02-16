@@ -6,7 +6,7 @@ deleteButtons.forEach((b) => {
 		const node: HTMLElement = b.parentNode as HTMLElement
 		b.addEventListener('click', () => {
 			let rID: number = node.dataset.recipeid ? +node.dataset.recipeid : -1;
-			fetch("/recipes", {
+			fetch("/recipes/delete", {
 				method: "DELETE", body: JSON.stringify({ recipeID: +rID, csrf: csrfToken })
 			})
 			node.remove()

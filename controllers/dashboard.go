@@ -155,4 +155,5 @@ func (d *Dashboard) SaveMeals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	setAlertData(w, fmt.Sprintf("Saved week beginning %s", monday.Format("January 02")), views.Success)
+	w.WriteHeader(http.StatusOK)
 }

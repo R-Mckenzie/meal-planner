@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 )
@@ -18,7 +17,6 @@ func getAlertData(w http.ResponseWriter, r *http.Request) (string, string, error
 	message, err := getFlash(w, r, "alert_message")
 	status, err := getFlash(w, r, "alert_type")
 	if err != nil {
-		log.Println(err)
 		return "", "", err
 	}
 	return string(message), string(status), nil
@@ -33,7 +31,6 @@ func getFlash(w http.ResponseWriter, r *http.Request, name string) ([]byte, erro
 	c, err := r.Cookie(name)
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) {
-			log.Println("err ", err)
 			return nil, nil
 		}
 		return nil, fmt.Errorf("in getFlash: %w", err)

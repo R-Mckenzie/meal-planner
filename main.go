@@ -52,7 +52,7 @@ func main() {
 	r.Post("/recipes", app.authorise(app.ctrl.Recipes.Create))
 	r.Get("/recipes/{recipeID}", app.authorise(app.ctrl.Recipes.UpdatePage))
 	r.Post("/recipes/{recipeID}", app.authorise(app.ctrl.Recipes.Update))
-	r.Delete("/recipes", app.authorise(app.ctrl.Recipes.Delete))
+	r.Delete("/recipes/delete", app.authorise(app.ctrl.Recipes.Delete))
 	r.Get("/signup", app.ctrl.Users.SignupPage)
 	r.Post("/signup", app.ctrl.Users.Signup)
 	r.Get("/login", app.ctrl.Users.LoginPage)
@@ -61,6 +61,7 @@ func main() {
 
 	csrf := nosurf.New(r)
 	csrf.ExemptPath("/dashboard")
+	csrf.ExemptPath("/recipes/delete")
 
 	srv := &http.Server{
 		Addr:    ":4000",

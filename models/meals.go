@@ -61,8 +61,6 @@ func (ms *mealService) DeleteInRange(ownerID int, start, end time.Time) error {
 	s := start.Format("2006-01-02")
 	e := end.Format("2006-01-02")
 
-	log.Printf("Start: %q, end: %q\n", s, e)
-
 	_, err := ms.db.Exec("DELETE FROM meals WHERE date >= $1 AND date <= $2 AND owner_id = $3", s, e, ownerID)
 	if err != nil {
 		return fmt.Errorf("in MealService.DeleteInRange: %w", err)
