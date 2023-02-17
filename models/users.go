@@ -61,6 +61,8 @@ func newUserPG(db *sql.DB, hmac tokens.HMAC, iLog, eLog *log.Logger) (*userPG, e
 	return &userPG{
 		db:   db,
 		hmac: hmac,
+		iLog: iLog,
+		eLog: eLog,
 	}, nil
 }
 
@@ -168,7 +170,6 @@ func (pg *userPG) ByID(id int) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("in UserPG.ByID: %w", err)
 	}
-	pg.iLog.Printf("Retrieved user %q by ID %d\n", u.Email, id)
 	return u, nil
 }
 
@@ -179,7 +180,6 @@ func (pg *userPG) ByEmail(email string) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("in UserPG.ByEmail: %w", err)
 	}
-	pg.iLog.Printf("Retrieved user %q by email\n", u.Email)
 	return u, nil
 }
 
@@ -195,6 +195,5 @@ func (pg *userPG) ByRemember(remember string) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("in UserPG.ByRemember: %w", err)
 	}
-	pg.iLog.Printf("Retrieved user %q by remember token\n", u.Email)
 	return u, nil
 }

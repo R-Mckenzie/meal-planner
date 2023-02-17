@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	//"github.com/go-chi/chi/v5/middleware"
 	"github.com/justinas/nosurf"
 
 	_ "github.com/lib/pq"
@@ -38,8 +38,8 @@ func main() {
 	}
 
 	r := chi.NewRouter()
-	r.Use(secureHeaders)     // Set recommended security headers
-	r.Use(middleware.Logger) // Log all requests made to server
+	r.Use(secureHeaders) // Set recommended security headers
+	//r.Use(middleware.Logger) // Log all requests made to server
 	r.Use(app.authenticate)
 
 	// Routes
