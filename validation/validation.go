@@ -18,15 +18,15 @@ func IsEmail(s string) bool {
 // If the password contains symbols, numbers, and is over 8 chars returns true, nil
 // If any checks fail, returns false, with a string slice of all faults
 func PasswordCheck(p string) (bool, []string) {
-	e := make([]string, 0)
+	faults := make([]string, 0)
 	valid := true
 	if !LongEnough(p, 8) {
-		e = append(e, "Passwords must be at least 8 characters in length.")
+		faults = append(faults, "Passwords must be at least 8 characters in length.")
 		valid = false
 	}
 
 	if valid {
-		e = nil
+		faults = nil
 	}
-	return valid, e
+	return valid, faults
 }

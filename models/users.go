@@ -28,10 +28,10 @@ type User struct {
 type UserService interface {
 	Authenticate(email, password string) (*User, error)
 	GenerateRemember(user *User) error
-	userDB
+	UserDB
 }
 
-type userDB interface {
+type UserDB interface {
 	// Methods fot getting a user
 	ByID(id int) (*User, error)
 	ByEmail(email string) (*User, error)
@@ -44,7 +44,7 @@ type userDB interface {
 }
 
 type userService struct {
-	userDB
+	UserDB
 	hmac tokens.HMAC
 	iLog *log.Logger
 	eLog *log.Logger
@@ -73,7 +73,7 @@ func NewUserService(db *sql.DB, iLog, eLog *log.Logger) (UserService, error) {
 		return nil, fmt.Errorf("in NewUserService: %w", err)
 	}
 	return &userService{
-		userDB: pgdb,
+		UserDB: pgdb,
 		hmac:   hmac,
 		iLog:   iLog,
 		eLog:   eLog,
@@ -82,7 +82,7 @@ func NewUserService(db *sql.DB, iLog, eLog *log.Logger) (UserService, error) {
 
 // === USER SERVICE
 func (us *userService) Authenticate(email, password string) (*User, error) {
-	user, err := us.userDB.ByEmail(email)
+	user, err := us.UserDB.ByEmail(email)
 	if err != nil {
 		us.eLog.Printf("tried to authenticate %q, but there is no stored user with this email\n", email)
 		return nil, errors.New("No user found with email " + email)
@@ -185,7 +185,7 @@ func (pg *userPG) ByEmail(email string) (*User, error) {
 
 func (us *userService) ByRemember(remember string) (*User, error) {
 	rHash := us.hmac.Hash(remember)
-	return us.userDB.ByRemember(rHash)
+	return us.UserDB.ByRemember(rHash)
 }
 
 func (pg *userPG) ByRemember(remember string) (*User, error) {
