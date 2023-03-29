@@ -149,6 +149,18 @@ func (pg *userPG) Create(email, password string) error {
 		return errors.New("There was a problem signing you up")
 	}
 
+	// Insert default recipes
+
+	rows, err := pg.db.Query(`INSERT INTO recipes (owner_id, title, ingredients, method, created_at, updated_at) 
+VALUES ($1, 'Chilli Con Carne','{"Mince", "Chopped Tomatoes", "Kidney Beans", "Chillis", "Onions", "Seasoning"}', 'Fry mince and onions \nAdd chopped tomatoes \nAdd kidney beans and seasoning and simmer', current_timestamp, current_timestamp),
+($1, 'Spaghetti Bolognese','{"Mince", "Chopped Tomatoes", "Kidney Beans", "Chillis", "Onions", "Seasoning"}', 'Fry mince and onions \nAdd chopped tomatoes \nAdd kidney beans and seasoning and simmer', current_timestamp, current_timestamp),
+($1, 'Fajitas','{"Chicken", "Peppers", "onions", "Cayenne Pepper", "Salt", "Paprika", "Tortilla Wraps"}', 'Chicken and vegetables\nAdd seasoning \nServe in warm tortilla wraps', current_timestamp, current_timestamp)`, user.ID)
+	if err != nil {
+		log.Println(err)
+		return errors.New("There was a problem adding default recipes")
+	}
+	defer rows.Close()
+
 	pg.iLog.Printf("User %q created\n", email)
 	return nil
 }

@@ -31,7 +31,6 @@ type RecipeService interface {
 	Update(recipe Recipe) error
 	Delete(recipeID, ownderID int) error
 	GetTitle(id int) (string, error)
-	GetAvailable() ([]Recipe, error)
 	GetByUser(ownerID int) ([]Recipe, error)
 	GetByID(id, ownerID int) (*Recipe, error)
 }
@@ -81,11 +80,6 @@ func (rs *recipeService) GetTitle(id int) (string, error) {
 		return "", fmt.Errorf("in RecipeService.GetTitle: %w", err)
 	}
 	return title, nil
-}
-
-// Retrieves both the user's own recipes and the public recipes (from user 0)
-func (rs *recipeService) GetAvailable() ([]Recipe, error) {
-	return nil, nil
 }
 
 func (rs *recipeService) GetByUser(ownerId int) ([]Recipe, error) {
