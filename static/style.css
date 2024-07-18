@@ -1,6 +1,6 @@
 /* Variables */
 :root {
-	--black: #000000;
+	--black: #262927;
 	--white: #FFFFFF;
 	--bg: #e3f5df;
 	--fg: #000000;
@@ -23,7 +23,11 @@ body {
 	font-family: Arial, Helvetica, sans-serif;
 }
 
-h1, h2, h3, h4, h5 {
+h1,
+h2,
+h3,
+h4,
+h5 {
 	margin: 0;
 	padding: 0;
 }
@@ -45,10 +49,10 @@ li {
 }
 
 li:has(~ li:hover),
-li:hover ~ li {
+li:hover~li {
 	opacity: 0.5;
 }
-	
+
 a {
 	text-decoration: none;
 }

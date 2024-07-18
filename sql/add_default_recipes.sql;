@@ -1,0 +1,4 @@
+ id | owner_id | title | ingredients | method | created_at | updated_at | deleted_at 
+----+----------+-------+-------------+--------+------------+------------+------------
+(0 rows)
+

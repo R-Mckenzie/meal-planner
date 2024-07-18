@@ -8,10 +8,10 @@ import (
 
 const (
 	host     = "localhost"
-	port     = 5432
+	port     = 5433
 	user     = "postgres"
 	password = "mealplannerpgadmin"
-	dbname   = "mealplanner_dev"
+	dbname   = "mealplanner_db"
 )
 
 type Services struct {
@@ -25,10 +25,12 @@ type Services struct {
 
 func NewServices(iLog, eLog *log.Logger) (*Services, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable TimeZone=UTC", host, port, user, password, dbname)
+	fmt.Println(psqlInfo)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("Pinging DB...")
 	err = db.Ping()
 	if err != nil {
 		panic(err)
