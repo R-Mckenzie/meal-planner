@@ -1,0 +1,12 @@
+package pages
+
+import "go-app-template/cmd/web/layouts"
+
+templ Error404(authenticated bool, csrf string) {
+@layouts.Base(authenticated, csrf) {
+<div class="h-full w-full flex flex-col justify-center align-middle items-center gap-4">
+	<div class="text-muted-foreground text-5xl font-bold">404</div>
+	<div class="text-lg">The page you are looking for does not exist</div>
+</div>
+}
+}
