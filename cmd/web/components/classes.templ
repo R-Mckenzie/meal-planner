@@ -1,0 +1,30 @@
+package components
+
+templ donotuse() {
+}
+
+func ButtonAttrs() templ.Attributes {
+class := "inline-flex text-primary-foreground items-center justify-center px-4 py-2 font-medium text-sm tracking-wide" +
+"transition-colors duration-100 rounded-md bg-primary text-foreground cursor-pointer hover:bg-primary/90 focus:ring" +
+"focus:ring-primary focus:shadow-outline focus:outline-none"
+return templ.Attributes{"class": class}
+}
+
+func InputAttrs(hasError bool) templ.Attributes {
+class := "flex w-full px-3 py-2 bg-muted text-sm border rounded-md ring-offset-background" +
+"placeholder:text-muted-foreground focus:border-ring focus:outline-none disabled:cursor-not-allowed" +
+"disabled:opacity-50"
+if hasError {
+class += " border-destructive"
+} else {
+class += " border-input"
+}
+return templ.Attributes{
+"class": class,
+}
+}
+
+func CardAttrs() templ.Attributes {
+class := "bg-card text-card-foreground p-6 rounded-lg border border-solid border-ring"
+return templ.Attributes{"class": class}
+}
