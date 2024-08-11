@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 module github.com/R-Mckenzie/meal-planner
 
 go 1.19
@@ -13,6 +14,11 @@ require (
 ||||||| (empty tree)
 =======
 module go-app-template
+||||||| parent of 44d41cb (update module)
+module go-app-template
+=======
+module github.com/R-Mckenzie/mealplanner
+>>>>>>> 44d41cb (update module)
 
 go 1.22.5
 

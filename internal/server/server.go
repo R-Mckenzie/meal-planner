@@ -14,8 +14,8 @@ import (
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 
-	"go-app-template/internal/auth"
-	"go-app-template/internal/database"
+	"github.com/R-Mckenzie/mealplanner/internal/auth"
+	"github.com/R-Mckenzie/mealplanner/internal/database"
 )
 
 type Server struct {

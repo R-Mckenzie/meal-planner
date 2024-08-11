@@ -1,68 +1,84 @@
 package pages
 
 import (
-"go-app-template/cmd/web/components"
-"go-app-template/cmd/web/layouts"
-"go-app-template/internal/validation"
+	"github.com/R-Mckenzie/mealplanner/cmd/web/components"
+	"github.com/R-Mckenzie/mealplanner/cmd/web/layouts"
+	"github.com/R-Mckenzie/mealplanner/internal/validation"
 )
 
 type SignupPageData struct {
-FormValues SignupFormValues
-FormErrors validation.Errors
+	FormValues SignupFormValues
+	FormErrors validation.Errors
 }
 
 type SignupFormValues struct {
-CSRFToken string `form:"csrfToken"`
-Email string `form:"email"`
-Password string `form:"password"`
-PasswordConfirmation string `form:"password-confirmation"`
+	CSRFToken            string `form:"csrfToken"`
+	Email                string `form:"email"`
+	Password             string `form:"password"`
+	PasswordConfirmation string `form:"password-confirmation"`
 }
 
 templ SignupIndex(data SignupPageData) {
-@layouts.Base(false, data.FormValues.CSRFToken) {
-<div class="w-full justify-center gap-10">
-	<div class="max-w-sm mx-auto border rounded-md shadow-sm py-12 px-8 flex flex-col gap-8">
-		<h2 class="text-center text-2xl font-medium">Sign Up</h2>
-		@SignupForm(data.FormValues, data.FormErrors)
-	</div>
-</div>
-}
+	@layouts.Base(false, data.FormValues.CSRFToken) {
+		<div class="w-full justify-center gap-10">
+			<div class="max-w-sm mx-auto border rounded-md shadow-sm py-12 px-8 flex flex-col gap-8">
+				<h2 class="text-center text-2xl font-medium">Sign Up</h2>
+				@SignupForm(data.FormValues, data.FormErrors)
+			</div>
+		</div>
+	}
 }
 
 templ SignupForm(values SignupFormValues, errors validation.Errors) {
-<form hx-post="/signup" class="flex flex-col gap-4">
-	<input type="hidden" name="csrf_token" value={ values.CSRFToken } />
-	<div class="flex flex-col gap-1">
-		<label for="email">Email *</label>
-		<input { components.InputAttrs(errors.Has("email"))... } name="email" id="email" value={ values.Email }
-			placeholder="email" />
-		if errors.Has("email") {
-		<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
-		}
-	</div>
-	<div class="flex flex-col gap-1 mb-4">
-		<label for="password">Password *</label>
-		<input { components.InputAttrs(errors.Has("password"))... } type="password" name="password" id="password"
-			value={ values.Password } placeholder="password" />
-		if errors.Has("password") {
-		<ul class="list-disc ml-4">
-			for _, err := range errors.Get("password") {
-			<li class="text-red-500 text-xs">{ err }</li>
+	<form hx-post="/signup" class="flex flex-col gap-4">
+		<input type="hidden" name="csrf_token" value={ values.CSRFToken }/>
+		<div class="flex flex-col gap-1">
+			<label for="email">Email *</label>
+			<input
+				{ components.InputAttrs(errors.Has("email"))... }
+				name="email"
+				id="email"
+				value={ values.Email }
+				placeholder="email"
+			/>
+			if errors.Has("email") {
+				<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
 			}
-		</ul>
-		}
-		<label for="password-confirmation">Confirm Password *</label>
-		<input { components.InputAttrs(errors.Has("password-confirmation"))... } type="password"
-			name="password-confirmation" id="password-confirmation" value={ values.PasswordConfirmation }
-			placeholder="confirm password" />
-		if errors.Has("password-confirmation") {
-		<ul class="list-disc ml-4">
-			for _, err := range errors.Get("password-confirmation") {
-			<li class="text-red-500 text-xs">{ err }</li>
+		</div>
+		<div class="flex flex-col gap-1 mb-4">
+			<label for="password">Password *</label>
+			<input
+				{ components.InputAttrs(errors.Has("password"))... }
+				type="password"
+				name="password"
+				id="password"
+				value={ values.Password }
+				placeholder="password"
+			/>
+			if errors.Has("password") {
+				<ul class="list-disc ml-4">
+					for _, err := range errors.Get("password") {
+						<li class="text-red-500 text-xs">{ err }</li>
+					}
+				</ul>
 			}
-		</ul>
-		}
-	</div>
-	<button { components.ButtonAttrs()... }>Sign Up</button>
-</form>
+			<label for="password-confirmation">Confirm Password *</label>
+			<input
+				{ components.InputAttrs(errors.Has("password-confirmation"))... }
+				type="password"
+				name="password-confirmation"
+				id="password-confirmation"
+				value={ values.PasswordConfirmation }
+				placeholder="confirm password"
+			/>
+			if errors.Has("password-confirmation") {
+				<ul class="list-disc ml-4">
+					for _, err := range errors.Get("password-confirmation") {
+						<li class="text-red-500 text-xs">{ err }</li>
+					}
+				</ul>
+			}
+		</div>
+		<button { components.ButtonAttrs()... }>Sign Up</button>
+	</form>
 }
