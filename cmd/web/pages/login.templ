@@ -1,69 +1,59 @@
 package pages
 
 import (
-	"go-app-template/cmd/web/components"
-	"go-app-template/cmd/web/layouts"
-	"go-app-template/internal/validation"
+"go-app-template/cmd/web/components"
+"go-app-template/cmd/web/layouts"
+"go-app-template/internal/validation"
 )
 
 type LoginIndexPageData struct {
-	FormValues LoginFormValues
-	FormErrors validation.Errors
+FormValues LoginFormValues
+FormErrors validation.Errors
 }
 
 type LoginFormValues struct {
-	CSRFToken string
-	Email     string `form:"email"`
-	Password  string `form:"password"`
+CSRFToken string
+Email string `form:"email"`
+Password string `form:"password"`
 }
 
 templ LoginIndex(data LoginIndexPageData) {
-	@layouts.Base(false, data.FormValues.CSRFToken) {
-		<div class="w-full justify-center gap-10">
-			<div class="max-w-sm my-auto mx-auto border rounded-md shadow-sm py-12 px-8 flex flex-col gap-8">
-				<h2 class="text-center text-2xl font-medium">Login to SaaS</h2>
-				@LoginForm(data.FormValues, data.FormErrors)
-				<a class="text-sm underline" href="/signup">Don't have an account? Signup here.</a>
-			</div>
-		</div>
-	}
+@layouts.Base(false, data.FormValues.CSRFToken) {
+<div class="w-full justify-center gap-10">
+	<div class="max-w-sm my-auto mx-auto border rounded-md shadow-sm py-12 px-8 flex flex-col gap-8">
+		<h2 class="text-center text-2xl font-medium">Login</h2>
+		@LoginForm(data.FormValues, data.FormErrors)
+		<a class="text-sm underline" href="/signup">Don't have an account? Signup here.</a>
+	</div>
+</div>
+}
 }
 
 templ LoginForm(values LoginFormValues, errors validation.Errors) {
-	<form hx-post="/login" class="flex flex-col gap-4">
-		<input type="hidden" name="csrf_token" value={ values.CSRFToken }/>
-		<div class="flex flex-col gap-1">
-			<label for="email">Email *</label>
-			<input
-				{ components.InputAttrs(errors.Has("email"))... }
-				name="email"
-				id="email"
-				value={ values.Email }
-				placeholder="email"
-			/>
-			if errors.Has("email") {
-				<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
-			}
-		</div>
-		<div class="flex flex-col gap-1 mb-4">
-			<label for="password">Password *</label>
-			<input
-				{ components.InputAttrs(errors.Has("password"))... }
-				type="password"
-				name="password"
-				id="password"
-				placeholder="password"
-			/>
-			if errors.Has("credentials") {
-				<div class="text-red-500 text-xs">{ errors.Get("credentials")[0] }</div>
-			}
-		</div>
-		<input type="submit" { components.ButtonAttrs()... } value="Login"/>
-	</form>
+<form hx-post="/login" class="flex flex-col gap-4">
+	<input type="hidden" name="csrf_token" value={ values.CSRFToken } />
+	<div class="flex flex-col gap-1">
+		<label for="email">Email *</label>
+		<input { components.InputAttrs(errors.Has("email"))... } name="email" id="email" value={ values.Email }
+			placeholder="email" />
+		if errors.Has("email") {
+		<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
+		}
+	</div>
+	<div class="flex flex-col gap-1 mb-4">
+		<label for="password">Password *</label>
+		<input { components.InputAttrs(errors.Has("password"))... } type="password" name="password" id="password"
+			placeholder="password" />
+		if errors.Has("credentials") {
+		<div class="text-red-500 text-xs">{ errors.Get("credentials")[0] }</div>
+		}
+	</div>
+	<button { components.ButtonAttrs()... }>Login</button>
+</form>
 }
 
 templ googleButton() {
-	<button onclick="location.href='/auth/google'" type="button" class="google-sign-in-button mt-2 w-full" disabled>
-		Sign in with Google
-	</button>
+<button onclick="location.href='/auth/google'" type="button" class="google-sign-in-button mt-2 w-full" disabled>
+	Sign in with Google
+</button>
 }
