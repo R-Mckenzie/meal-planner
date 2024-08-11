@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go-app-template/internal/server"
+	"github.com/R-Mckenzie/mealplanner/internal/server"
 )
 
 func main() {

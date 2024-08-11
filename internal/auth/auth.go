@@ -3,12 +3,11 @@ package auth
 import (
 	"context"
 	"errors"
-	"fmt"
-	"go-app-template/cmd/web/components"
-	"go-app-template/cmd/web/pages"
-	"go-app-template/internal/database"
-	"go-app-template/internal/validation"
-	"log"
+	"github.com/R-Mckenzie/mealplanner/cmd/web/components"
+	"github.com/R-Mckenzie/mealplanner/cmd/web/pages"
+	"github.com/R-Mckenzie/mealplanner/internal/database"
+	"github.com/R-Mckenzie/mealplanner/internal/validation"
+	"log/slog"
 	"net/http"
 
 	"github.com/alexedwards/scs/v2"
@@ -58,8 +57,10 @@ func (a *AuthService) IsAuthenticated(r *http.Request) bool {
 func (a *AuthService) AuthorisedUser(ctx context.Context) int {
 	id, ok := a.sessions.Get(ctx, "authenticatedUserId").(int)
 	if !ok {
-		log.Println("could not find authorised user")
+		slog.Info("User not authenticated")
 		return -1
+	} else {
+		slog.Info("User authenticated")
 	}
 
 	return id
@@ -68,9 +69,7 @@ func (a *AuthService) AuthorisedUser(ctx context.Context) int {
 func (a *AuthService) RequireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// If not authenticated, redirect to login
-		fmt.Println(a.IsAuthenticated(r))
 		if !a.IsAuthenticated(r) {
-			fmt.Println(a.IsAuthenticated(r))
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
@@ -117,21 +116,24 @@ func (a *AuthService) UserSignup(w http.ResponseWriter, r *http.Request) {
 func (a *AuthService) UserLogin(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
-
 	e := make(validation.Errors)
 
 	u, err := a.users.GetByEmail(email)
+	if err != nil {
+		slog.Info("Could not find user with email", "email", email)
+	}
 	err = bcrypt.CompareHashAndPassword(u.PassHash, []byte(password))
 	if err != nil {
 		validation.Validate("credentials", "Email and password do not match", false, e)
-		log.Println(err)
+		slog.Info("Email and password do not match", "email", email)
 		pages.LoginForm(pages.LoginFormValues{Email: email, Password: password, CSRFToken: nosurf.Token(r)}, e).Render(r.Context(), w)
 		return
 	}
 
 	err = a.RenewToken(r.Context(), u.ID)
 	if err != nil {
-		components.Warning("There was an issue signing in").Render(r.Context(), w)
+		slog.Info("There was a problem logging in", "email", email)
+		components.Warning("There was a problem logginf in").Render(r.Context(), w)
 	}
 
 	w.Header().Add("HX-Redirect", "/")

@@ -1,9 +1,0 @@
-package pages
-
-import "go-app-template/cmd/web/layouts"
-
-templ AuthorisedPage(csrf_token string) {
-	@layouts.Base(true, csrf_token) {
-		<h2 class="text-center text-2xl font-medium">Authorised Page</h2>
-	}
-}

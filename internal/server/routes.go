@@ -2,12 +2,12 @@ package server
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
 
-	"go-app-template/cmd/web"
-	"go-app-template/cmd/web/pages"
-	"go-app-template/internal/database"
+	"github.com/R-Mckenzie/mealplanner/cmd/web"
+	"github.com/R-Mckenzie/mealplanner/cmd/web/pages"
+	"github.com/R-Mckenzie/mealplanner/internal/database"
 
 	"github.com/justinas/nosurf"
 )
@@ -23,15 +23,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// HOMEPAGE
 	mux.Handle("/", s.auth.Sessions(s.noSurf(http.HandlerFunc(s.indexHandler))))
-
+	mux.Handle("GET /dashboard", s.auth.Sessions(s.auth.RequireAuthentication(s.noSurf(http.HandlerFunc(s.dashboardPageHandler)))))
 	// AUTH
-	// -- Static Pages
 	mux.Handle("GET /signup", s.auth.Sessions(s.noSurf(http.HandlerFunc(s.signupPageHandler))))
 	mux.Handle("GET /login", s.auth.Sessions(s.noSurf(http.HandlerFunc(s.loginPageHandler))))
-
-	mux.Handle("GET /locked", s.auth.Sessions(s.auth.RequireAuthentication(s.noSurf(http.HandlerFunc(s.authorisedPageHandler)))))
-
-	// --Email/Password Handlers
 	mux.Handle("POST /signup", s.auth.Sessions(s.noSurf(http.HandlerFunc(s.auth.UserSignup))))
 	mux.Handle("POST /login", s.auth.Sessions(s.noSurf(http.HandlerFunc(s.auth.UserLogin))))
 	mux.Handle("POST /logout", s.auth.Sessions(s.noSurf(http.HandlerFunc(s.auth.UserLogout))))
@@ -39,8 +34,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	return mux
 }
 
-func (s *Server) authorisedPageHandler(w http.ResponseWriter, r *http.Request) {
-	pages.AuthorisedPage(nosurf.Token(r)).Render(r.Context(), w)
+func (s *Server) dashboardPageHandler(w http.ResponseWriter, r *http.Request) {
+	pages.DashboardPage(nosurf.Token(r)).Render(r.Context(), w)
 }
 
 func (s *Server) signupPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +61,7 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	jsonResp, err := json.Marshal(database.Health(s.db))
 
 	if err != nil {
-		log.Fatalf("error handling JSON marshal. Err: %v", err)
+		slog.Error("error handling JSON marshal", "Error", err)
 	}
 
 	_, _ = w.Write(jsonResp)
@@ -79,5 +74,6 @@ func (s *Server) noSurf(next http.Handler) http.Handler {
 		Path:     "/",
 		Secure:   true,
 	})
+
 	return csrfHandler
 }

@@ -1,4 +1,4 @@
-module go-app-template
+module github.com/R-Mckenzie/mealplanner
 
 go 1.22.5
 
