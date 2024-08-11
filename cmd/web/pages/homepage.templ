@@ -1,411 +1,357 @@
 package pages
 
 import (
-	"go-app-template/cmd/web/components"
-	"go-app-template/cmd/web/layouts"
+"go-app-template/cmd/web/components"
+"go-app-template/cmd/web/layouts"
 )
 
 templ Homepage(authenticated bool, csrf_token string) {
-	@layouts.Base(authenticated, csrf_token) {
-		@hero()
-		@keyFeatures()
-		@howItWorks()
-		@socialProof()
-		@pricing()
-		@faq()
-		@callToAction()
-	}
+@layouts.Base(authenticated, csrf_token) {
+@hero()
+@keyFeatures()
+@howItWorks()
+@socialProof()
+@pricing()
+@faq()
+@callToAction()
+}
 }
 
 templ hero() {
-	<div class="w-full flex flex-col items-center gap-4 mt-16 mb-40">
-		<h1 class="text-center font-black text-8xl">Template SaaS App</h1>
-		<h2 class="text-center font-medium text-4xl">Build your SaaS quickly</h2>
-		<a href="/signup" { components.ButtonAttrs()... }>
-			Get
-			Started
-		</a>
-	</div>
+<div class="w-full flex flex-col items-center gap-4 mt-16 mb-40">
+	<h1 class="text-center font-black text-8xl">MealPlanner</h1>
+	<h2 class="text-center font-medium text-4xl">Keep track of your meals quickly</h2>
+	<a href="/signup" { components.ButtonAttrs()... }>
+		Get
+		Started
+	</a>
+</div>
 }
 
 templ keyFeatures() {
-	<section class="py-16">
-		<div class="container mx-auto px-4">
-			<h2 class="text-3xl font-bold text-center mb-12">Key Features</h2>
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-				<!-- Feature 1 -->
-				<div { components.CardAttrs()... }>
-					<div class="text-blue-500 mb-4">
-						<svg
-							class="w-12 h-12"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M13 10V3L4 14h7v7l9-11h-7z"
-							></path>
-						</svg>
-					</div>
-					<h3 class="text-xl font-semibold mb-2">Lightning Fast</h3>
-					<p class="text-muted-foreground">
-						Experience blazing fast performance with our optimized infrastructure.
-					</p>
+<section class="py-16">
+	<div class="container mx-auto px-4">
+		<h2 class="text-3xl font-bold text-center mb-12">Key Features</h2>
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+			<!-- Feature 1 -->
+			<div { components.CardAttrs()... }>
+				<div class="text-blue-500 mb-4">
+					<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+					</svg>
 				</div>
-				<!-- Feature 2 -->
-				<div { components.CardAttrs()... }>
-					<div class="text-green-500 mb-4">
-						<svg
-							class="w-12 h-12"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-							></path>
-						</svg>
-					</div>
-					<h3 class="text-xl font-semibold mb-2">Bank-Level Security</h3>
-					<p class="text-muted-foreground">
-						Your data is protected with state-of-the-art encryption and security measures.
-					</p>
+				<h3 class="text-xl font-semibold mb-2">Save Time</h3>
+				<p class="text-muted-foreground">
+					Cut hours of meal prep down to minutes
+				</p>
+			</div>
+			<!-- Feature 2 -->
+			<div { components.CardAttrs()... }>
+				<div class="text-green-500 mb-4">
+					<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+						</path>
+					</svg>
 				</div>
-				<!-- Feature 3 -->
-				<div { components.CardAttrs()... }>
-					<div class="text-purple-500 mb-4">
-						<svg
-							class="w-12 h-12"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
-							></path>
-						</svg>
-					</div>
-					<h3 class="text-xl font-semibold mb-2">Seamless Integration</h3>
-					<p class="text-muted-foreground">
-						Easily connect with your favorite tools and services for a smooth
-						workflow.
-					</p>
+				<h3 class="text-xl font-semibold mb-2">Eat Healthier</h3>
+				<p class="text-muted-foreground">
+					Access nutritionist-approved recipes at your fingertips
+				</p>
+			</div>
+			<!-- Feature 3 -->
+			<div { components.CardAttrs()... }>
+				<div class="text-purple-500 mb-4">
+					<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z">
+						</path>
+					</svg>
 				</div>
-				<!-- Feature 4 -->
-				<div { components.CardAttrs()... }>
-					<div class="text-yellow-500 mb-4">
-						<svg
-							class="w-12 h-12"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-							></path>
-						</svg>
-					</div>
-					<h3 class="text-xl font-semibold mb-2">Advanced Analytics</h3>
-					<p class="text-muted-foreground">
-						Gain valuable insights with our powerful and intuitive analytics
-						dashboard.
-					</p>
+				<h3 class="text-xl font-semibold mb-2">Reduce Stress</h3>
+				<p class="text-muted-foreground">
+					Eliminate the daily meal decision fatigue
+				</p>
+			</div>
+			<!-- Feature 4 -->
+			<div { components.CardAttrs()... }>
+				<div class="text-yellow-500 mb-4">
+					<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+						xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+					</svg>
 				</div>
+				<h3 class="text-xl font-semibold mb-2">Save Money</h3>
+				<p class="text-muted-foreground">
+					Smart planning means less food waste and impulse buying
+				</p>
 			</div>
 		</div>
-	</section>
+	</div>
+</section>
 }
 
 templ howItWorks() {
-	<section class="py-16">
-		<div class="container mx-auto px-4">
-			<h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
-			<div class="flex flex-col md:flex-row justify-center items-center space-y-8 md:space-y-0 md:space-x-8">
-				<div class="flex flex-col items-center max-w-xs text-center">
-					<h3 class="text-xl font-semibold mb-2">Sign Up</h3>
-					<p class="text-muted-foreground">Create your account in just a few clicks</p>
-				</div>
-				<div class="hidden md:block text-gray-300">
-					<svg
-						class="w-8 h-8"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-					</svg>
-				</div>
-				<div class="flex flex-col items-center max-w-xs text-center">
-					<h3 class="text-xl font-semibold mb-2">Customize</h3>
-					<p class="text-muted-foreground">Set up your preferences and integrations</p>
-				</div>
-				<div class="hidden md:block text-gray-300">
-					<svg
-						class="w-8 h-8"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-					</svg>
-				</div>
-				<div class="flex flex-col items-center max-w-xs text-center">
-					<h3 class="text-xl font-semibold mb-2">Enjoy</h3>
-					<p class="text-muted-foreground">Start using our powerful tools and features</p>
-				</div>
+<section class="py-16">
+	<div class="container mx-auto px-4">
+		<h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
+		<div class="flex flex-col md:flex-row justify-center items-center space-y-8 md:space-y-0 md:space-x-8">
+			<div class="flex flex-col items-center max-w-xs text-center">
+				<h3 class="text-xl font-semibold mb-2">Set Your Goals</h3>
+				<p class="text-muted-foreground">Tell us about your dietary needs and health objectives</p>
+			</div>
+			<div class="hidden md:block text-gray-300">
+				<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+					xmlns="http://www.w3.org/2000/svg">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3">
+					</path>
+				</svg>
+			</div>
+			<div class="flex flex-col items-center max-w-xs text-center">
+				<h3 class="text-xl font-semibold mb-2">Plan Your Week</h3>
+				<p class="text-muted-foreground">Drag and drop delicious meals into your calendar</p>
+			</div>
+			<div class="hidden md:block text-gray-300">
+				<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+					xmlns="http://www.w3.org/2000/svg">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3">
+					</path>
+				</svg>
+			</div>
+			<div class="flex flex-col items-center max-w-xs text-center">
+				<h3 class="text-xl font-semibold mb-2">Shop with Ease</h3>
+				<p class="text-muted-foreground">Get auto-generated grocery lists for stress-free shopping</p>
+			</div>
+			<div class="hidden md:block text-gray-300">
+				<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+					xmlns="http://www.w3.org/2000/svg">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3">
+					</path>
+				</svg>
+			</div>
+			<div class="flex flex-col items-center max-w-xs text-center">
+				<h3 class="text-xl font-semibold mb-2">Cook and Enjoy</h3>
+				<p class="text-muted-foreground">Follow simple recipes to create restaurant-quality meals at home</p>
 			</div>
 		</div>
-	</section>
+	</div>
+</section>
 }
 
 templ socialProof() {
-	<section class="py-16">
-		<div class="container mx-auto px-4">
-			<h2 class="text-3xl font-bold text-center mb-12">What Our Customers Say</h2>
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-				<div { components.CardAttrs()... }>
-					<div class="flex items-center mb-4">
-						@userIcon()
-						<div>
-							<h3 class="font-semibold">John Doe</h3>
-							<p class="text-muted-foreground">CEO, TechCorp</p>
-						</div>
+<section class="py-16">
+	<div class="container mx-auto px-4">
+		<h2 class="text-3xl font-bold text-center mb-12">What Our Customers Say</h2>
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+			<div { components.CardAttrs()... }>
+				<div class="flex items-center mb-4">
+					@userIcon()
+					<div>
+						<h3 class="font-semibold">Sarah M.</h3>
+						<p class="text-muted-foreground">Working Mother</p>
 					</div>
-					<p class="text-muted-foreground">
-						"This SaaS solution has revolutionized our workflow. Highly
-						recommended!"
-					</p>
 				</div>
-				<div { components.CardAttrs()... }>
-					<div class="flex items-center mb-4">
-						@userIcon()
-						<div>
-							<h3 class="font-semibold">Jane Smith</h3>
-							<p class="text-muted-foreground">CTO, InnovateCo</p>
-						</div>
+				<p class="text-muted-foreground">
+					"I've lost 15 pounds and discovered a love for cooking!"
+				</p>
+			</div>
+			<div { components.CardAttrs()... }>
+				<div class="flex items-center mb-4">
+					@userIcon()
+					<div>
+						<h3 class="font-semibold">John D.</h3>
+						<p class="text-muted-foreground">Father of 3</p>
 					</div>
-					<p class="text-muted-foreground">
-						"The features and customer support are unparalleled. A game-changer for our
-						team."
-					</p>
 				</div>
-				<div { components.CardAttrs()... }>
-					<div class="flex items-center mb-4">
-						@userIcon()
-						<div>
-							<h3 class="font-semibold">Mike Johnson</h3>
-							<p class="text-muted-foreground">Founder, StartupX</p>
-						</div>
+				<p class="text-muted-foreground">
+					"MealPlanner has brought peace to our family dinners."
+				</p>
+			</div>
+			<div { components.CardAttrs()... }>
+				<div class="flex items-center mb-4">
+					@userIcon()
+					<div>
+						<h3 class="font-semibold">Alex T.</h3>
+						<p class="text-muted-foreground">Software Engineer</p>
 					</div>
-					<p class="text-muted-foreground">
-						"Intuitive, powerful, and scalable. Exactly what we needed to grow our
-						business."
-					</p>
 				</div>
+				<p class="text-muted-foreground">
+					"As a busy professional, MealPlanner has been a game-changer. I'm eating healthier and saving
+					money on takeout."
+				</p>
 			</div>
 		</div>
-	</section>
+	</div>
+</section>
 }
 
 templ pricing() {
-	<section class="py-16">
-		<div class="container mx-auto px-4">
-			<h2 class="text-3xl font-bold text-center mb-12">Choose Your Plan</h2>
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-				<div class="border rounded-lg p-8 flex flex-col">
-					<h3 class="text-2xl font-bold mb-4">Basic</h3>
-					<p class="text-4xl font-bold mb-6">
-						$9<span class="text-muted-foreground text-base font-normal">/month</span>
-					</p>
-					<ul class="mb-8 flex-grow">
-						<li class="flex items-center mb-2">
-							@tick()
-							Feature 1
-						</li>
-						<li class="flex items-center mb-2">
-							@tick()
-							Feature 2
-						</li>
-						<li class="flex items-center mb-2 text-muted-foreground">
-							@cross()
-							Feature 3
-						</li>
-					</ul>
-					<button { components.ButtonAttrs()... }>
-						Choose
-						Plan
-					</button>
-				</div>
-				<div class="border rounded-lg p-8 flex flex-col bg-accent border-ring">
-					<h3 class="text-2xl font-bold mb-4">Pro</h3>
-					<p class="text-4xl font-bold mb-6">
-						$29<span class="text-muted-foreground text-base font-normal">/month</span>
-					</p>
-					<ul class="mb-8 flex-grow">
-						<li class="flex items-center mb-2">
-							@tick()
-							Feature 1
-						</li>
-						<li class="flex items-center mb-2">
-							@tick()
-							Feature 2
-						</li>
-						<li class="flex items-center mb-2">
-							@tick()
-							Feature 3
-						</li>
-					</ul>
-					<button { components.ButtonAttrs()... }>
-						Choose
-						Plan
-					</button>
-				</div>
-				<div class="border rounded-lg p-8 flex flex-col">
-					<h3 class="text-2xl font-bold mb-4">Enterprise</h3>
-					<p class="text-4xl font-bold mb-6">
-						$99<span class="text-muted-foreground text-base font-normal">/month</span>
-					</p>
-					<ul class="mb-8 flex-grow">
-						<li class="flex items-center mb-2">
-							@tick()
-							Feature 1
-						</li>
-						<li class="flex items-center mb-2">
-							@tick()
-							Feature 2
-						</li>
-						<li class="flex items-center mb-2">
-							@tick()
-							Feature 3
-						</li>
-						<li class="flex items-center mb-2">
-							@tick()
-							Feature 4
-						</li>
-					</ul>
-					<button { components.ButtonAttrs()... }>
-						Choose
-						Plan
-					</button>
-				</div>
+<section class="py-16">
+	<div class="container mx-auto px-4">
+		<h2 class="text-3xl font-bold text-center mb-12">Choose Your Plan</h2>
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+			<div class="border rounded-lg p-8 flex flex-col">
+				<h3 class="text-2xl font-bold mb-4">Basic</h3>
+				<p class="text-4xl font-bold mb-6">
+					$4.99<span class="text-muted-foreground text-base font-normal">/month</span>
+				</p>
+				<ul class="mb-8 flex-grow">
+					<li class="flex items-center mb-2">
+						@tick()
+						Feature 1
+					</li>
+					<li class="flex items-center mb-2">
+						@tick()
+						Feature 2
+					</li>
+					<li class="flex items-center mb-2 text-muted-foreground">
+						@cross()
+						Feature 3
+					</li>
+				</ul>
+				<button { components.ButtonAttrs()... }>
+					Choose
+					Plan
+				</button>
+			</div>
+			<div class="border rounded-lg p-8 flex flex-col bg-accent border-ring">
+				<h3 class="text-2xl font-bold mb-4">Pro</h3>
+				<p class="text-4xl font-bold mb-6">
+					$9.99<span class="text-muted-foreground text-base font-normal">/month</span>
+				</p>
+				<ul class="mb-8 flex-grow">
+					<li class="flex items-center mb-2">
+						@tick()
+						Feature 1
+					</li>
+					<li class="flex items-center mb-2">
+						@tick()
+						Feature 2
+					</li>
+					<li class="flex items-center mb-2">
+						@tick()
+						Feature 3
+					</li>
+				</ul>
+				<button { components.ButtonAttrs()... }>
+					Choose
+					Plan
+				</button>
+			</div>
+			<div class="border rounded-lg p-8 flex flex-col">
+				<h3 class="text-2xl font-bold mb-4">Enterprise</h3>
+				<p class="text-4xl font-bold mb-6">
+					$24.99<span class="text-muted-foreground text-base font-normal">/month</span>
+				</p>
+				<ul class="mb-8 flex-grow">
+					<li class="flex items-center mb-2">
+						@tick()
+						Feature 1
+					</li>
+					<li class="flex items-center mb-2">
+						@tick()
+						Feature 2
+					</li>
+					<li class="flex items-center mb-2">
+						@tick()
+						Feature 3
+					</li>
+					<li class="flex items-center mb-2">
+						@tick()
+						Feature 4
+					</li>
+				</ul>
+				<button { components.ButtonAttrs()... }>
+					Choose
+					Plan
+				</button>
 			</div>
 		</div>
-	</section>
+	</div>
+</section>
 }
 
 templ faq() {
-	<section class="py-16">
-		<div class="container mx-auto px-4">
-			<h2 class="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
-			<div class="max-w-3xl mx-auto">
-				<div class="mb-6">
-					<h3 class="text-xl font-semibold mb-2">What is [Your SaaS Product]?</h3>
-					<p class="text-muted-foreground">
-						[Your SaaS Product] is a cloud-based software solution that helps businesses
-						[brief explanation of main benefit].
-					</p>
-				</div>
-				<div class="mb-6">
-					<h3 class="text-xl font-semibold mb-2">How does the pricing work?</h3>
-					<p class="text-muted-foreground">
-						We offer tiered pricing plans to suit businesses of all sizes. You can choose
-						from our Basic, Pro, or Enterprise plans, each with different features and capabilities.
-					</p>
-				</div>
-				<div class="mb-6">
-					<h3 class="text-xl font-semibold mb-2">Is there a free trial available?</h3>
-					<p class="text-muted-foreground">
-						Yes, we offer a 14-day free trial for all new users. No credit card is required
-						to start your trial.
-					</p>
-				</div>
-				<div class="mb-6">
-					<h3 class="text-xl font-semibold mb-2">How secure is my data?</h3>
-					<p class="text-muted-foreground">
-						We take data security very seriously. All data is encrypted in transit and at
-						rest, and we use industry-standard security practices to protect your information.
-					</p>
-				</div>
-				<div class="text-center mt-8">
-					<a href="#" class="hover:text-primary/90 font-semibold">View all FAQs</a>
-				</div>
+<section class="py-16">
+	<div class="container mx-auto px-4">
+		<h2 class="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+		<div class="max-w-3xl mx-auto">
+			<div class="mb-6">
+				<h3 class="text-xl font-semibold mb-2">What is MealPlanner?</h3>
+				<p class="text-muted-foreground">
+					MealPlanner is a cloud-based software solution that helps you
+					easily manage your nutrition and meal prep
+				</p>
+			</div>
+			<div class="mb-6">
+				<h3 class="text-xl font-semibold mb-2">How does the pricing work?</h3>
+				<p class="text-muted-foreground">
+					We offer tiered pricing plans to suit businesses of all sizes. You can choose
+					from our Basic, Pro, or Enterprise plans, each with different features and capabilities.
+				</p>
+			</div>
+			<div class="mb-6">
+				<h3 class="text-xl font-semibold mb-2">Is there a free trial available?</h3>
+				<p class="text-muted-foreground">
+					Yes, we offer a 14-day free trial for all new users. No credit card is required
+					to start your trial.
+				</p>
+			</div>
+			<div class="mb-6">
+				<h3 class="text-xl font-semibold mb-2">How secure is my data?</h3>
+				<p class="text-muted-foreground">
+					We take data security very seriously. All data is encrypted in transit and at
+					rest, and we use industry-standard security practices to protect your information.
+				</p>
+			</div>
+			<div class="text-center mt-8">
+				<a href="#" class="hover:text-primary/90 font-semibold">View all FAQs</a>
 			</div>
 		</div>
-	</section>
+	</div>
+</section>
 }
 
 templ callToAction() {
-	<section class="py-20">
-		<div class="container mx-auto px-4 text-center">
-			<div { components.CardAttrs()... }>
-				<h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Business?</h2>
-				<p class="text-xl mb-8">
-					Join thousands of satisfied customers and take your operations to the next
-					level.
-				</p>
-				<div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
-					<a href="#" { components.ButtonAttrs()... }>
-						Start
-						Free Trial
-					</a>
-				</div>
+<section class="py-20">
+	<div class="container mx-auto px-4 text-center">
+		<div { components.CardAttrs()... }>
+			<h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Take Your Nutrition to The Next Level?</h2>
+			<p class="text-xl mb-8">Start your journey to stress-free, healthy eating today</p>
+			<div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
+				<a href="#" { components.ButtonAttrs()... }>
+					Start
+					Free Trial
+				</a>
 			</div>
 		</div>
-	</section>
+	</div>
+</section>
 }
 
 templ userIcon() {
-	<svg
-		class="w-12 h-12 mr-5 text-primary"
-		xmlns="http://www.w3.org/2000/svg"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="1"
-	>
-		<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-		<circle cx="12" cy="7" r="4"></circle>
-	</svg>
+<svg class="w-12 h-12 mr-5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+	stroke="currentColor" stroke-width="1">
+	<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+	<circle cx="12" cy="7" r="4"></circle>
+</svg>
 }
 
 templ cross() {
-	<svg
-		class="w-5 h-5 text-muted-foreground mr-2"
-		fill="none"
-		stroke="currentColor"
-		viewBox="0 0 24 24"
-		xmlns="http://www.w3.org/2000/svg"
-	>
-		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-	</svg>
+<svg class="w-5 h-5 text-muted-foreground mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+	xmlns="http://www.w3.org/2000/svg">
+	<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+</svg>
 }
 
 templ tick() {
-	<svg
-		class="w-5 h-5 text-green-500 mr-2"
-		fill="none"
-		stroke="currentColor"
-		viewBox="0 0 24 24"
-		xmlns="http://www.w3.org/2000/svg"
-	>
-		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-	</svg>
+<svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+	xmlns="http://www.w3.org/2000/svg">
+	<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+</svg>
 }

@@ -36,7 +36,7 @@ run:
 
 # Create DB container
 docker-run:
-	@if docker compose up 2>/dev/null; then \
+	@if docker compose up -d 2>/dev/null; then \
 		: ; \
 	else \
 		echo "Falling back to Docker Compose V1"; \
@@ -53,7 +53,7 @@ docker-down:
 	fi
 
 connect-db:
-	psql -h localhost -p 5433 -U pguser template
+	psql -h localhost -p 5433 -U mealplanner mealplanner
 
 # Test the application
 test:
