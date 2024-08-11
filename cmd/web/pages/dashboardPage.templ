@@ -1,0 +1,88 @@
+package pages
+
+import "github.com/R-Mckenzie/mealplanner/cmd/web/layouts"
+
+templ DashboardPage(csrf_token string) {
+@layouts.Base(true, csrf_token) {
+<div class="w-fit mx-auto flex gap-2">
+	<div class="recipes mr-8" hx-trigger="end">
+		<h2 class="text-xl font-medium">Recipes</h2>
+		<div class="htmx-indicator">Updating...</div>
+		@mealCard("spaghetti")
+		@mealCard("chilli")
+		@mealCard("salad")
+		@mealCard("burgers")
+		@mealCard("fried eggs")
+	</div>
+	<form class="sortable" hx-post="/items" hx-trigger="end">
+		<h2 class="text-xl font-medium">Monday</h2>
+		<div class="htmx-indicator">Updating...</div>
+		@mealCard("spaghetti")
+		@mealCard("chilli")
+		@mealCard("salad")
+		@mealCard("burgers")
+		@mealCard("fried eggs")
+	</form>
+	<form class="sortable" hx-post="/items" hx-trigger="end">
+		<h2 class="text-xl font-medium">Tuesday</h2>
+		<div class="htmx-indicator">Updating...</div>
+		@mealCard("spaghetti")
+		@mealCard("chilli")
+		@mealCard("salad")
+		@mealCard("burgers")
+		@mealCard("fried eggs")
+	</form>
+	<form class="sortable" hx-post="/items" hx-trigger="end">
+		<h2 class="text-xl font-medium">Wednesday</h2>
+		<div class="htmx-indicator">Updating...</div>
+		@mealCard("spaghetti")
+		@mealCard("chilli")
+		@mealCard("salad")
+		@mealCard("burgers")
+		@mealCard("fried eggs")
+	</form>
+	<form class="sortable" hx-post="/items" hx-trigger="end">
+		<h2 class="text-xl font-medium">Thursday</h2>
+		<div class="htmx-indicator">Updating...</div>
+		@mealCard("spaghetti")
+		@mealCard("chilli")
+		@mealCard("salad")
+		@mealCard("burgers")
+		@mealCard("fried eggs")
+	</form>
+	<form class="sortable" hx-post="/items" hx-trigger="end">
+		<h2 class="text-xl font-medium">Friday</h2>
+		<div class="htmx-indicator">Updating...</div>
+		@mealCard("spaghetti")
+		@mealCard("chilli")
+		@mealCard("salad")
+		@mealCard("burgers")
+		@mealCard("fried eggs")
+	</form>
+	<form class="sortable" hx-post="/items" hx-trigger="end">
+		<h2 class="text-xl font-medium">Saturday</h2>
+		<div class="htmx-indicator">Updating...</div>
+		@mealCard("spaghetti")
+		@mealCard("chilli")
+		@mealCard("salad")
+		@mealCard("burgers")
+		@mealCard("fried eggs")
+	</form>
+	<form class="sortable" hx-post="/items" hx-trigger="end">
+		<h2 class="text-xl font-medium">Sunday</h2>
+		<div class="htmx-indicator">Updating...</div>
+		@mealCard("spaghetti")
+		@mealCard("chilli")
+		@mealCard("salad")
+		@mealCard("burgers")
+		@mealCard("fried eggs")
+	</form>
+</div>
+}
+}
+
+templ mealCard(name string) {
+<div class="px-4 py-2 bg-background border border-ring rounded-sm my-2 select-none">
+	<input type="hidden" name="item" value={ name } />{ name }
+</div>
+}
