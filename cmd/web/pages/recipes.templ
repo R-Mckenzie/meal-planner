@@ -1,0 +1,117 @@
+package pages
+
+import (
+	"github.com/R-Mckenzie/mealplanner/cmd/web/components"
+	"github.com/R-Mckenzie/mealplanner/cmd/web/layouts"
+	"strconv"
+	"strings"
+)
+
+type RecipesData struct {
+	RecipeID          int
+	RecipeTitle       string
+	RecipeIngredients []string
+	RecipeMethod      string
+}
+
+templ RecipesPage(data []RecipesData, csrf_token string) {
+	@layouts.Base(true, csrf_token) {
+		<div class="container flex content-center mx-auto gap-4">
+			<div id="recipes_list" class="flex flex-col">
+				<h2 class="text-xl font-medium mb-2">Recipes</h2>
+				<form
+					id="new_recipe_button"
+					class="min-w-full"
+					hx-trigger="click"
+					hx-get="/recipes/-1"
+					hx-target="#form_container"
+					hx-params="none"
+				>
+					<button { components.ButtonAttrs()... }>New</button>
+				</form>
+				@RecipesList(data)
+			</div>
+			<div class="border-l border-l-primary"></div>
+			<div id="form_container" class="min-w-min max-w-screen-md grow mx-auto">
+				@CreateRecipeForm(false, csrf_token)
+			</div>
+		</div>
+	}
+}
+
+templ RecipesList(data []RecipesData) {
+	for _, item := range data {
+		@RecipesCard(item.RecipeTitle, item.RecipeID)
+	}
+}
+
+templ RecipesCard(recipe string, recipeID int) {
+	<form
+		id={ "recipe_" + strconv.Itoa(recipeID) }
+		hx-trigger="click"
+		hx-get={ "/recipes/" + strconv.Itoa(recipeID) }
+		hx-target="#form_container"
+		hx-params="none"
+		class="px-2 py-2 text-xs flex justify-between items-center bg-background border border-ring rounded-sm mt-1 max-w-32 text-wrap select-none cursor-pointer"
+	>
+		{ recipe }
+	</form>
+}
+
+templ CreateRecipeForm(afterDelete bool, csrf_token string) {
+	<form
+		class=""
+		hx-post="/recipes/create"
+		if afterDelete {
+			hx-swap-oob="innerHTML:#form_container"
+		}
+		hx-target="#new_recipe_button"
+		hx-swap="afterend"
+		u
+	>
+		<input type="hidden" name="csrf_token" value={ csrf_token }/>
+		<label for="title">Title *</label>
+		<input { components.InputAttrs(false)... } name="title"/>
+		<label for="ingredients">Ingredients *</label>
+		<textarea { components.InputAttrs(false)... } name="ingredients"></textarea>
+		<label for="method">Method *</label>
+		<textarea { components.InputAttrs(false)... } name="method"></textarea>
+		<div class="mt-4"></div>
+		<button { components.ButtonAttrs()... }>Create</button>
+	</form>
+}
+
+templ RecipeForm(recipe RecipesData, csrf_token string) {
+	<form
+		hx-put={ "/recipes/" + strconv.Itoa(recipe.RecipeID) }
+		hx-target={ "#recipe_" + strconv.Itoa(recipe.RecipeID) }
+		hx-swap="outerHTML"
+	>
+		<input type="hidden" name="csrf_token" value={ csrf_token }/>
+		<label for="title">Title *</label>
+		<input { components.InputAttrs(false)... } name="title" value={ recipe.RecipeTitle }/>
+		<label for="ingredients">Ingredients *</label>
+		<textarea { components.InputAttrs(false)... } name="ingredients">
+			{ addNewlines(recipe.RecipeIngredients) }
+		</textarea>
+		<label for="method">Method *</label>
+		<textarea { components.InputAttrs(false)... } name="method">{ recipe.RecipeMethod }</textarea>
+		<div class="mt-4"></div>
+		<button { components.ButtonAttrs()... }>Save</button>
+	</form>
+	<form
+		class="mt-4"
+		hx-delete={ "/recipes/delete/" + strconv.Itoa(recipe.RecipeID) }
+		hx-target={ "#recipe_" +
+	strconv.Itoa(recipe.RecipeID) }
+		hx-swap="outerHTML"
+		hx-params="none"
+	>
+		<input type="hidden" name="csrf_token" value={ csrf_token }/>
+		<button { components.ButtonAttrs()... }>Delete</button>
+	</form>
+}
+
+func addNewlines(ingredients []string) string {
+	return strings.Join(ingredients, "\n")
+}

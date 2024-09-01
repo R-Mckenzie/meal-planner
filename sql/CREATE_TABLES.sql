@@ -23,7 +23,6 @@ CREATE TABLE recipes (
     method VARCHAR(500),
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
-    deleted_at TIMESTAMP,
     CONSTRAINT recipe_owner_fk FOREIGN KEY (owner_id)
         REFERENCES public.users (id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
@@ -33,9 +32,9 @@ CREATE TABLE meals (
     owner_id INTEGER NOT NULL,
     recipe_id INTEGER NOT NULL,
     date DATE NOT NULL,
+	meal_time SMALLINT NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
-    deleted_at TIMESTAMP,
     CONSTRAINT meal_owner_fk FOREIGN KEY (owner_id)
         REFERENCES public.users (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT recipe_fk FOREIGN KEY (recipe_id)
