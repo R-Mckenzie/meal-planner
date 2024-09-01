@@ -16,6 +16,7 @@ import (
 
 	"github.com/R-Mckenzie/mealplanner/internal/auth"
 	"github.com/R-Mckenzie/mealplanner/internal/database"
+	"github.com/R-Mckenzie/mealplanner/internal/services"
 )
 
 type Server struct {
@@ -24,7 +25,9 @@ type Server struct {
 	db *sql.DB
 
 	// Services
-	auth *auth.AuthService
+	auth    *auth.AuthService
+	meals   *services.MealService
+	recipes *services.RecipeService
 }
 
 func NewServer() *http.Server {
@@ -36,10 +39,13 @@ func NewServer() *http.Server {
 	sessions.Store = postgresstore.New(db)
 	sessions.Lifetime = 12 * time.Hour
 
+	auth := auth.NewAuth(sessions, database.NewUserStore(db))
 	NewServer := &Server{
-		port: port,
-		db:   db,
-		auth: auth.NewAuth(sessions, database.NewUserStore(db)),
+		port:    port,
+		db:      db,
+		auth:    auth,
+		meals:   services.NewMealsService(database.NewMealStore(db), auth),
+		recipes: services.NewRecipeService(database.NewRecipeStore(db), auth),
 	}
 
 	// Declare Server config

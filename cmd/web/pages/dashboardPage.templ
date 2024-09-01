@@ -1,88 +1,151 @@
 package pages
 
-import "github.com/R-Mckenzie/mealplanner/cmd/web/layouts"
+import (
+	"github.com/R-Mckenzie/mealplanner/cmd/web/layouts"
+	"strconv"
+	"strings"
+	"time"
+)
 
-templ DashboardPage(csrf_token string) {
-@layouts.Base(true, csrf_token) {
-<div class="w-fit mx-auto flex gap-2">
-	<div class="recipes mr-8" hx-trigger="end">
-		<h2 class="text-xl font-medium">Recipes</h2>
-		<div class="htmx-indicator">Updating...</div>
-		@mealCard("spaghetti")
-		@mealCard("chilli")
-		@mealCard("salad")
-		@mealCard("burgers")
-		@mealCard("fried eggs")
+type MealData struct {
+	RecipeName string
+	RecipeID   int
+	MealID     int
+}
+
+type DashboardData struct {
+	WeekStartDate time.Time
+	Recipes       []MealData
+
+	Meals map[time.Weekday][]MealData
+}
+
+templ DashboardPage(data DashboardData, csrf_token string) {
+	@layouts.Base(true, csrf_token) {
+		<div class="w-fit h-full m-auto pb-8" id="dashboard_container">
+			@Dashboard(data, csrf_token)
+		</div>
+	}
+}
+
+templ Dashboard(data DashboardData, csrf_token string) {
+	<div class="flex gap-4 mb-4">
+		<button
+			class="px-2 rounded-sm bg-primary text-primary-foreground"
+			hx-get={ "/dashboard?week_start=" +
+		data.WeekStartDate.Add(-time.Hour*24*7).Format(time.DateOnly) }
+			hx-target="#dashboard_container"
+		>←</button>
+		<button
+			class="px-2 rounded-sm bg-primary text-primary-foreground"
+			hx-get={ "/dashboard?week_start=" +
+		data.WeekStartDate.Add(time.Hour*24*7).Format(time.DateOnly) }
+			hx-target="#dashboard_container"
+		>→</button>
 	</div>
-	<form class="sortable" hx-post="/items" hx-trigger="end">
-		<h2 class="text-xl font-medium">Monday</h2>
-		<div class="htmx-indicator">Updating...</div>
-		@mealCard("spaghetti")
-		@mealCard("chilli")
-		@mealCard("salad")
-		@mealCard("burgers")
-		@mealCard("fried eggs")
-	</form>
-	<form class="sortable" hx-post="/items" hx-trigger="end">
-		<h2 class="text-xl font-medium">Tuesday</h2>
-		<div class="htmx-indicator">Updating...</div>
-		@mealCard("spaghetti")
-		@mealCard("chilli")
-		@mealCard("salad")
-		@mealCard("burgers")
-		@mealCard("fried eggs")
-	</form>
-	<form class="sortable" hx-post="/items" hx-trigger="end">
-		<h2 class="text-xl font-medium">Wednesday</h2>
-		<div class="htmx-indicator">Updating...</div>
-		@mealCard("spaghetti")
-		@mealCard("chilli")
-		@mealCard("salad")
-		@mealCard("burgers")
-		@mealCard("fried eggs")
-	</form>
-	<form class="sortable" hx-post="/items" hx-trigger="end">
-		<h2 class="text-xl font-medium">Thursday</h2>
-		<div class="htmx-indicator">Updating...</div>
-		@mealCard("spaghetti")
-		@mealCard("chilli")
-		@mealCard("salad")
-		@mealCard("burgers")
-		@mealCard("fried eggs")
-	</form>
-	<form class="sortable" hx-post="/items" hx-trigger="end">
-		<h2 class="text-xl font-medium">Friday</h2>
-		<div class="htmx-indicator">Updating...</div>
-		@mealCard("spaghetti")
-		@mealCard("chilli")
-		@mealCard("salad")
-		@mealCard("burgers")
-		@mealCard("fried eggs")
-	</form>
-	<form class="sortable" hx-post="/items" hx-trigger="end">
-		<h2 class="text-xl font-medium">Saturday</h2>
-		<div class="htmx-indicator">Updating...</div>
-		@mealCard("spaghetti")
-		@mealCard("chilli")
-		@mealCard("salad")
-		@mealCard("burgers")
-		@mealCard("fried eggs")
-	</form>
-	<form class="sortable" hx-post="/items" hx-trigger="end">
-		<h2 class="text-xl font-medium">Sunday</h2>
-		<div class="htmx-indicator">Updating...</div>
-		@mealCard("spaghetti")
-		@mealCard("chilli")
-		@mealCard("salad")
-		@mealCard("burgers")
-		@mealCard("fried eggs")
-	</form>
-</div>
-}
+	<div class="flex gap-2 min-h-full">
+		@calendar(data, csrf_token)
+		<div class="border-l border-l-primary"></div>
+		<div>
+			<h2 class="text-xl font-medium ">Recipes</h2>
+			<div class="recipes mr-8" hx-trigger="end, add">
+				for _, item := range data.Recipes {
+					// mealID of -1 means that this is not in the database yet
+					@mealCard(item.RecipeName, item.RecipeID, -1)
+				}
+			</div>
+		</div>
+	</div>
 }
 
-templ mealCard(name string) {
-<div class="px-4 py-2 bg-background border border-ring rounded-sm my-2 select-none">
-	<input type="hidden" name="item" value={ name } />{ name }
-</div>
+templ calendar(data DashboardData, csrf_token string) {
+	<div class="border-l border-l-primary"></div>
+	<div class="min-w-32">
+		<h2 class="text-xl font-medium ">Monday { getDateString(data.WeekStartDate) }</h2>
+		@MealPlanForm(data.Meals[time.Monday], data.WeekStartDate, csrf_token)
+	</div>
+	<div class="border-l border-l-primary"></div>
+	<div class="min-w-32">
+		<h2 class="text-xl font-medium ">Tuesday { getDateString(getDay(data.WeekStartDate, 1)) }</h2>
+		@MealPlanForm(data.Meals[time.Tuesday], getDay(data.WeekStartDate, 1), csrf_token)
+	</div>
+	<div class="border-l border-l-primary"></div>
+	<div class="min-w-32">
+		<h2 class="text-xl font-medium ">Wednesday { getDateString(getDay(data.WeekStartDate, 2)) }</h2>
+		@MealPlanForm(data.Meals[time.Wednesday], getDay(data.WeekStartDate, 2), csrf_token)
+	</div>
+	<div class="border-l border-l-primary"></div>
+	<div class="min-w-32">
+		<h2 class="text-xl font-medium ">Thursday { getDateString(getDay(data.WeekStartDate, 3)) }</h2>
+		@MealPlanForm(data.Meals[time.Thursday], getDay(data.WeekStartDate, 3), csrf_token)
+	</div>
+	<div class="border-l border-l-primary"></div>
+	<div class="min-w-32">
+		<h2 class="text-xl font-medium ">Friday { getDateString(getDay(data.WeekStartDate, 4)) }</h2>
+		@MealPlanForm(data.Meals[time.Friday], getDay(data.WeekStartDate, 4), csrf_token)
+	</div>
+	<div class="border-l border-l-primary"></div>
+	<div class="min-w-32">
+		<h2 class="text-xl font-medium ">Saturday { getDateString(getDay(data.WeekStartDate, 5)) }</h2>
+		@MealPlanForm(data.Meals[time.Saturday], getDay(data.WeekStartDate, 5), csrf_token)
+	</div>
+	<div class="border-l border-l-primary"></div>
+	<div class="min-w-32">
+		<h2 class="text-xl font-medium ">Sunday { getDateString(getDay(data.WeekStartDate, 6)) }</h2>
+		@MealPlanForm(data.Meals[time.Sunday], getDay(data.WeekStartDate, 6), csrf_token)
+	</div>
+}
+
+func getDay(weekStart time.Time, offset int) time.Time {
+	return weekStart.Add(time.Hour * 24 * time.Duration(offset))
+}
+
+func getDateString(date time.Time) string {
+	full := date.Format(time.DateOnly)
+	split := strings.Split(full, "-")
+	return split[2]
+}
+
+templ MealPlanForm(meals []MealData, date time.Time, csrf_token string) {
+	<form class="sortable" hx-post="/meals" hx-trigger="end, add">
+		<input type="hidden" name="csrf_token" value={ csrf_token }/>
+		<input type="hidden" name="date" value={ date.Format(time.DateOnly) }/>
+		for _, item := range meals {
+			@mealCard(item.RecipeName, item.RecipeID, item.MealID)
+		}
+	</form>
+}
+
+templ MealPlanItems(meals []MealData, date time.Time, csrf_token string) {
+	<input type="hidden" name="csrf_token" value={ csrf_token }/>
+	<input type="hidden" name="date" value={ date.Format(time.DateOnly) }/>
+	for _, item := range meals {
+		@mealCard(item.RecipeName, item.RecipeID, item.MealID)
+	}
+}
+
+func delPath(recipeID int) string {
+	id := strconv.Itoa(recipeID)
+	return "/meals/delete/" + id
+}
+
+templ mealCard(recipe string, recipeID, mealID int) {
+	<div
+		id={ "i" + strconv.Itoa(mealID) }
+		class="px-2 py-2 text-xs flex justify-between items-center bg-background border border-ring rounded-sm my-2 max-w-32 text-wrap select-none"
+	>
+		<input type="hidden" name="recipe_name" value={ recipe }/>
+		<input type="hidden" name="meal_id" value={ strconv.Itoa(mealID) }/>
+		<input type="hidden" name="recipe_id" value={ strconv.Itoa(recipeID) }/>
+		{ recipe }
+		if mealID > -1 {
+			<button
+				class="text-red-600 text-center font-black rounded-sm"
+				hx-params="csrf_token"
+				hx-delete={ delPath(mealID) }
+				hx-target={ "#i" + strconv.Itoa(mealID) }
+				hx-swap="outerHTML"
+			>×</button>
+		}
+	</div>
 }

@@ -3,177 +3,287 @@ package layouts
 import "github.com/R-Mckenzie/mealplanner/cmd/web/components"
 
 templ Base(authenticated bool, csrf_token string) {
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-	<meta charset="utf-8" />
-	<title>MealPlanner</title>
-	<link href="assets/css/output.css" rel="stylesheet" />
-	<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-	<script src="assets/js/htmx.min.js"></script>
-	<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
-	<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-	<script defer src="assets/js/dashboard.js"></script>
-</head>
-
-<body x-data="{theme: $persist('dark')}" :class="theme" lang="en"
-	class="h-screen flex flex-col justify-between min-h-screen">
-	@Navbar(authenticated, csrf_token)
-	<main class="flex-grow">
-		{ children... }
-	</main>
-	@Footer()
-</body>
-
-</html>
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<title>MealPlanner</title>
+			<link href="assets/css/output.css" rel="stylesheet"/>
+			<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+			<script src="assets/js/htmx.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+			<script defer src="assets/js/dashboard.js"></script>
+		</head>
+		<body
+			x-data="{theme: $persist('dark')}"
+			:class="theme"
+			lang="en"
+			class="h-screen flex flex-col justify-between min-h-screen"
+		>
+			@Navbar(authenticated, csrf_token)
+			<main class="flex-grow">
+				{ children... }
+			</main>
+			@Footer()
+		</body>
+	</html>
 }
 
 templ Navbar(authenticated bool, csrf_token string) {
-<header class="mb-12 sm:mb-20">
-	<nav class="container mx-auto px-4 py-4 flex items-center justify-between">
-		<a href="/" class="flex items-center">
-			<svg class="h-8 w-8 text-foreground" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-				<g id="color">
-					<path fill="#D0CFCE" stroke="none" stroke-miterlimit="10" stroke-width="2"
-						d="M66.1204,26.2961 C66.1204,20.353,61,14.1351,61,16s0.9471,26.6324,0.9471,26.6324L61,58.8287c0,1.1046,0.8954,2,2,2s2-0.8954,2-2l-0.5289-16.2893 C64.4711,42.5394,66.1204,32.2392,66.1204,26.2961z">
-					</path>
-					<path fill="#D0CFCE" stroke="none" stroke-linecap="round" stroke-linejoin="round"
-						stroke-miterlimit="10" stroke-width="2"
-						d="M11.4211,16.7398c0,0,0.1115,4.158,0.1115,8.1058c0,2.9609-0.8993,4.8203-2.1809,5.565l0,0l0.0285,28.4181c0,1.1046-0.8954,2-2,2 s-2-0.8954-2-2L6.191,30.4165l0,0C4.904,29.6757,4,27.8142,4,24.8456c0-3.9478,0.1115-8.1058,0.1115-8.1058">
-					</path>
-					<line x1="7.7663" x2="7.7663" y1="16.7398" y2="26.3247" fill="#D0CFCE" stroke="none"
-						stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></line>
-					<circle cx="36" cy="35.9583" r="19.9583" fill="#D0CFCE" stroke="none" stroke-linecap="round"
-						stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></circle>
-					<circle cx="36.0042" cy="36" r="12.1495" fill="#D0CFCE" stroke="none" stroke-linecap="round"
-						stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></circle>
-				</g>
-				<g id="line">
-					<path fill="none" stroke="#000000" stroke-miterlimit="10" stroke-width="2"
-						d="M66.1204,26.2961 C66.1204,20.353,61,14.1351,61,16s0.9471,26.6324,0.9471,26.6324L61,58.8287c0,1.1046,0.8954,2,2,2s2-0.8954,2-2l-0.5289-16.2893 C64.4711,42.5394,66.1204,32.2392,66.1204,26.2961z">
-					</path>
-					<path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round"
-						stroke-miterlimit="10" stroke-width="2"
-						d="M11.4211,16.7398c0,0,0.1115,4.158,0.1115,8.1058c0,2.9609-0.8993,4.8203-2.1809,5.565l0,0l0.0285,28.4181c0,1.1046-0.8954,2-2,2 s-2-0.8954-2-2L6.191,30.4165l0,0C4.904,29.6757,4,27.8142,4,24.8456c0-3.9478,0.1115-8.1058,0.1115-8.1058">
-					</path>
-					<line x1="7.7663" x2="7.7663" y1="16.7398" y2="26.3247" fill="none" stroke="#000000"
-						stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></line>
-					<circle cx="36" cy="35.9583" r="19.9583" fill="none" stroke="#000000" stroke-linecap="round"
-						stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></circle>
-					<circle cx="36.0042" cy="36" r="12.1495" fill="none" stroke="#000000" stroke-linecap="round"
-						stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></circle>
-				</g>
-			</svg>
-			<span class="ml-2 text-xl font-semibold text-foreground">MealPlanner</span>
-		</a>
-		<div class="text-muted-foreground md:flex items-center gap-12">
-			<a href="#" class="hover:text-accent-foreground transition">Product</a>
-			<a href="#" class="hover:text-accent-foreground transition">Pricing</a>
-			<a href="#" class="hover:text-accent-foreground transition">Contact</a>
-		</div>
-		<div class="flex gap-4">
-			if authenticated {
-			<form hx-post="/logout" hx-target="body">
-				<input type="hidden" name="csrf_token" value={ csrf_token } />
-				<input type="submit" { components.ButtonAttrs()... } value="Log Out" />
-			</form>
-			} else {
-			<a href="/login" { components.ButtonAttrs()... }>
-				Sign In
+	<header class="mb-12 sm:mb-20">
+		<nav class="container mx-auto px-4 py-4 flex items-center justify-between">
+			<a if authenticated {
+	href="/dashboard"
+} else {
+	href="/"
+} class="flex items-center">
+				<svg class="h-8 w-8 text-foreground" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+					<g id="color">
+						<path
+							fill="#D0CFCE"
+							stroke="none"
+							stroke-miterlimit="10"
+							stroke-width="2"
+							d="M66.1204,26.2961 C66.1204,20.353,61,14.1351,61,16s0.9471,26.6324,0.9471,26.6324L61,58.8287c0,1.1046,0.8954,2,2,2s2-0.8954,2-2l-0.5289-16.2893 C64.4711,42.5394,66.1204,32.2392,66.1204,26.2961z"
+						></path>
+						<path
+							fill="#D0CFCE"
+							stroke="none"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-miterlimit="10"
+							stroke-width="2"
+							d="M11.4211,16.7398c0,0,0.1115,4.158,0.1115,8.1058c0,2.9609-0.8993,4.8203-2.1809,5.565l0,0l0.0285,28.4181c0,1.1046-0.8954,2-2,2 s-2-0.8954-2-2L6.191,30.4165l0,0C4.904,29.6757,4,27.8142,4,24.8456c0-3.9478,0.1115-8.1058,0.1115-8.1058"
+						></path>
+						<line
+							x1="7.7663"
+							x2="7.7663"
+							y1="16.7398"
+							y2="26.3247"
+							fill="#D0CFCE"
+							stroke="none"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-miterlimit="10"
+							stroke-width="2"
+						></line>
+						<circle
+							cx="36"
+							cy="35.9583"
+							r="19.9583"
+							fill="#D0CFCE"
+							stroke="none"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-miterlimit="10"
+							stroke-width="2"
+						></circle>
+						<circle
+							cx="36.0042"
+							cy="36"
+							r="12.1495"
+							fill="#D0CFCE"
+							stroke="none"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-miterlimit="10"
+							stroke-width="2"
+						></circle>
+					</g>
+					<g id="line">
+						<path
+							fill="none"
+							stroke="#000000"
+							stroke-miterlimit="10"
+							stroke-width="2"
+							d="M66.1204,26.2961 C66.1204,20.353,61,14.1351,61,16s0.9471,26.6324,0.9471,26.6324L61,58.8287c0,1.1046,0.8954,2,2,2s2-0.8954,2-2l-0.5289-16.2893 C64.4711,42.5394,66.1204,32.2392,66.1204,26.2961z"
+						></path>
+						<path
+							fill="none"
+							stroke="#000000"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-miterlimit="10"
+							stroke-width="2"
+							d="M11.4211,16.7398c0,0,0.1115,4.158,0.1115,8.1058c0,2.9609-0.8993,4.8203-2.1809,5.565l0,0l0.0285,28.4181c0,1.1046-0.8954,2-2,2 s-2-0.8954-2-2L6.191,30.4165l0,0C4.904,29.6757,4,27.8142,4,24.8456c0-3.9478,0.1115-8.1058,0.1115-8.1058"
+						></path>
+						<line
+							x1="7.7663"
+							x2="7.7663"
+							y1="16.7398"
+							y2="26.3247"
+							fill="none"
+							stroke="#000000"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-miterlimit="10"
+							stroke-width="2"
+						></line>
+						<circle
+							cx="36"
+							cy="35.9583"
+							r="19.9583"
+							fill="none"
+							stroke="#000000"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-miterlimit="10"
+							stroke-width="2"
+						></circle>
+						<circle
+							cx="36.0042"
+							cy="36"
+							r="12.1495"
+							fill="none"
+							stroke="#000000"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-miterlimit="10"
+							stroke-width="2"
+						></circle>
+					</g>
+				</svg>
+				<span class="ml-2 text-xl font-semibold text-foreground">MealPlanner</span>
 			</a>
-			}
-			@themeSwitcher()
-		</div>
-	</nav>
-</header>
+			<div class="text-muted-foreground md:flex items-center gap-12">
+				if authenticated {
+					<a href="/dashboard" class="hover:text-accent-foreground transition">Dashboard</a>
+					<a href="/recipes" class="hover:text-accent-foreground transition">Recipes</a>
+					<a href="/account" class="hover:text-accent-foreground transition">Account</a>
+				} else {
+					<a href="#" class="hover:text-accent-foreground transition">Product</a>
+					<a href="#" class="hover:text-accent-foreground transition">Pricing</a>
+					<a href="#" class="hover:text-accent-foreground transition">Contact</a>
+				}
+			</div>
+			<div class="flex gap-4">
+				if authenticated {
+					<form hx-post="/logout" hx-target="body">
+						<input type="hidden" name="csrf_token" value={ csrf_token }/>
+						<input type="submit" { components.ButtonAttrs()... } value="Log Out"/>
+					</form>
+				} else {
+					<a href="/login" { components.ButtonAttrs()... }>
+						Sign In
+					</a>
+				}
+				@themeSwitcher()
+			</div>
+		</nav>
+	</header>
 }
 
 templ Footer() {
-<footer class="bg-background text-foreground pt-8 pb-4">
-	<div class="container mx-auto px-4">
-		<div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-			<!-- Company Info -->
-			<div>
-				<h3 class="text-lg font-semibold mb-4">MealPlanner</h3>
-				<p class="text-muted-foreground">
-					Plan your meals and get the body you want
-				</p>
+	<footer class="bg-background text-foreground mt-16 pt-8 pb-4">
+		<div class="container mx-auto px-4">
+			<div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+				<!-- Company Info -->
+				<div>
+					<h3 class="text-lg font-semibold mb-4">MealPlanner</h3>
+					<p class="text-muted-foreground">
+						Plan your meals and get the body you want
+					</p>
+				</div>
+				<!-- Quick Links -->
+				<div>
+					<h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+					<ul class="space-y-2">
+						<li><a href="#" class="text-muted-foreground hover:text-foreground transition">Home</a></li>
+						<li><a href="#" class="text-muted-foreground hover:text-foreground transition">About Us</a></li>
+						<li><a href="#" class="text-muted-foreground hover:text-foreground transition">Services</a></li>
+						<li><a href="#" class="text-muted-foreground hover:text-foreground transition">Contact</a></li>
+					</ul>
+				</div>
+				<!-- Contact Info -->
+				<div>
+					<h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+					<p class="text-muted-foreground">123 Street Name, City, Country</p>
+					<p class="text-muted-foreground">Phone: (123) 456-7890</p>
+					<p class="text-muted-foreground">Email: info@example.com</p>
+				</div>
+				<!-- Newsletter Signup -->
+				<div>
+					<h3 class="text-lg font-semibold mb-4">Newsletter</h3>
+					<p class="text-muted-foreground mb-2">Stay updated with our latest news and offers.</p>
+					<form class="flex">
+						<input
+							type="email"
+							placeholder="Enter your email"
+							class="bg-input text-foreground px-4 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-ring"
+						/>
+						<button
+							type="submit"
+							class="bg-primary text-primary-foreground px-4 py-2 rounded-r-md hover:bg-primary/90 transition"
+						>Subscribe</button>
+					</form>
+				</div>
 			</div>
-			<!-- Quick Links -->
-			<div>
-				<h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-				<ul class="space-y-2">
-					<li><a href="#" class="text-muted-foreground hover:text-foreground transition">Home</a></li>
-					<li><a href="#" class="text-muted-foreground hover:text-foreground transition">About Us</a></li>
-					<li><a href="#" class="text-muted-foreground hover:text-foreground transition">Services</a></li>
-					<li><a href="#" class="text-muted-foreground hover:text-foreground transition">Contact</a></li>
-				</ul>
-			</div>
-			<!-- Contact Info -->
-			<div>
-				<h3 class="text-lg font-semibold mb-4">Contact Us</h3>
-				<p class="text-muted-foreground">123 Street Name, City, Country</p>
-				<p class="text-muted-foreground">Phone: (123) 456-7890</p>
-				<p class="text-muted-foreground">Email: info@example.com</p>
-			</div>
-			<!-- Newsletter Signup -->
-			<div>
-				<h3 class="text-lg font-semibold mb-4">Newsletter</h3>
-				<p class="text-muted-foreground mb-2">Stay updated with our latest news and offers.</p>
-				<form class="flex">
-					<input type="email" placeholder="Enter your email"
-						class="bg-input text-foreground px-4 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-ring" />
-					<button type="submit"
-						class="bg-primary text-primary-foreground px-4 py-2 rounded-r-md hover:bg-primary/90 transition">Subscribe</button>
-				</form>
+			<!-- Copyright -->
+			<div class="mt-4 pt-4 border-t border-muted text-center text-muted-foreground">
+				<p>&copy; 2024 Your Company Name. All rights reserved.</p>
 			</div>
 		</div>
-		<!-- Copyright -->
-		<div class="mt-4 pt-4 border-t border-muted text-center text-muted-foreground">
-			<p>&copy; 2024 Your Company Name. All rights reserved.</p>
-		</div>
-	</div>
-</footer>
+	</footer>
 }
 
 templ themeSwitcher() {
-<div class="my-auto select-none">
-	<div x-show="theme === 'dark'" class="cursor-pointer" @click={ "theme = 'light'" }>
-		@lightIcon()
+	<div class="my-auto select-none">
+		<div x-show="theme === 'dark'" class="cursor-pointer" @click={ "theme = 'light'" }>
+			@lightIcon()
+		</div>
+		<div x-show="theme === 'light'" class="cursor-pointer" @click={ "theme = 'dark'" }>
+			@darkIcon()
+		</div>
 	</div>
-	<div x-show="theme === 'light'" class="cursor-pointer" @click={ "theme = 'dark'" }>
-		@darkIcon()
-	</div>
-</div>
 }
 
 templ darkIcon() {
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-	stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun-moon">
-	<path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"></path>
-	<path d="M12 2v2"></path>
-	<path d="M12 20v2"></path>
-	<path d="m4.9 4.9 1.4 1.4"></path>
-	<path d="m17.7 17.7 1.4 1.4"></path>
-	<path d="M2 12h2"></path>
-	<path d="M20 12h2"></path>
-	<path d="m6.3 17.7-1.4 1.4"></path>
-	<path d="m19.1 4.9-1.4 1.4"></path>
-</svg>
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		width="24"
+		height="24"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		class="lucide lucide-sun-moon"
+	>
+		<path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"></path>
+		<path d="M12 2v2"></path>
+		<path d="M12 20v2"></path>
+		<path d="m4.9 4.9 1.4 1.4"></path>
+		<path d="m17.7 17.7 1.4 1.4"></path>
+		<path d="M2 12h2"></path>
+		<path d="M20 12h2"></path>
+		<path d="m6.3 17.7-1.4 1.4"></path>
+		<path d="m19.1 4.9-1.4 1.4"></path>
+	</svg>
 }
 
 templ lightIcon() {
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-	stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun">
-	<circle cx="12" cy="12" r="4"></circle>
-	<path d="M12 2v2"></path>
-	<path d="M12 20v2"></path>
-	<path d="m4.93 4.93 1.41 1.41"></path>
-	<path d="m17.66 17.66 1.41 1.41"></path>
-	<path d="M2 12h2"></path>
-	<path d="M20 12h2"></path>
-	<path d="m6.34 17.66-1.41 1.41"></path>
-	<path d="m19.07 4.93-1.41 1.41"></path>
-</svg>
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		width="24"
+		height="24"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		class="lucide lucide-sun"
+	>
+		<circle cx="12" cy="12" r="4"></circle>
+		<path d="M12 2v2"></path>
+		<path d="M12 20v2"></path>
+		<path d="m4.93 4.93 1.41 1.41"></path>
+		<path d="m17.66 17.66 1.41 1.41"></path>
+		<path d="M2 12h2"></path>
+		<path d="M20 12h2"></path>
+		<path d="m6.34 17.66-1.41 1.41"></path>
+		<path d="m19.07 4.93-1.41 1.41"></path>
+	</svg>
 }

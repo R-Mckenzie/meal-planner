@@ -57,12 +57,8 @@ func (a *AuthService) IsAuthenticated(r *http.Request) bool {
 func (a *AuthService) AuthorisedUser(ctx context.Context) int {
 	id, ok := a.sessions.Get(ctx, "authenticatedUserId").(int)
 	if !ok {
-		slog.Info("User not authenticated")
 		return -1
-	} else {
-		slog.Info("User authenticated")
 	}
-
 	return id
 }
 
