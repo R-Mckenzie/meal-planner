@@ -1,23 +1,3 @@
-<<<<<<< HEAD
-.DEFAULT_GOAL := build
-
-fmt:
-	go fmt ./...
-.PHONY:fmt
-
-lint: fmt
-	golint ./...
-.PHONY:lint
-
-vet: fmt
-	go vet ./...
-.PHONY:vet
-
-build: vet
-	go build -o ./bin/app main.go
-.PHONY:build
-||||||| (empty tree)
-=======
 # Simple Makefile for a Go project
 
 # Build the application
@@ -83,4 +63,3 @@ watch:
 	fi
 
 .PHONY: all build run test clean
->>>>>>> a361766 (Start with template)
