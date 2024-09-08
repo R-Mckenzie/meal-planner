@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"strconv"
 	"time"
@@ -29,8 +30,11 @@ func New() *sql.DB {
 		return dbInstance
 	}
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
+
+	slog.Info("Connecting to database...")
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
+		slog.Error("Could not connect to database", "error", err)
 		log.Fatal(err)
 	}
 	dbInstance = db

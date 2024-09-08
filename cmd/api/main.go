@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/R-Mckenzie/mealplanner/internal/server"
 )
 

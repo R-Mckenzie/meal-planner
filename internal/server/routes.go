@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -21,6 +22,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	fileServer := http.FileServer(http.FS(web.Files))
 	mux.Handle("/assets/", fileServer)
+	mux.HandleFunc("/favicon.ico", favicon)
 
 	// HOMEPAGE
 	mux.Handle("/", s.auth.Sessions(http.HandlerFunc(s.indexHandler)))
@@ -55,7 +57,18 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	csrfHandler.ExemptGlob("/meals/delete/*")
 	csrfHandler.ExemptGlob("/recipes/delete/*")
-	return csrfHandler
+	return logRequest(csrfHandler)
+}
+
+func favicon(w http.ResponseWriter, r *http.Request) {
+	http.ServeFileFS(w, r, web.Files, "assets/favicon.ico")
+}
+
+func logRequest(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		slog.Info(fmt.Sprintf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL))
+		handler.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) recipesPageHandler(w http.ResponseWriter, r *http.Request) {
