@@ -51,8 +51,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	csrfMiddleware := csrf.Protect([]byte(os.Getenv("SESSION_KEY")),
 		csrf.Path("/"),
 		csrf.SameSite(csrf.SameSiteLaxMode),
-		csrf.Secure(false),
-		csrf.HttpOnly(false),
+		csrf.Secure(os.Getenv("IS_PRODUCTION") == "false"),
+		csrf.HttpOnly(os.Getenv("IS_PRODUCTION") == "true"),
 	)
 	return csrfMiddleware(mux)
 }

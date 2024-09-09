@@ -2,7 +2,7 @@ services:
   go-app:
     build: .
     container_name: mealplanner
-    image: mealplanner
+    image: rmdocker22/mealplanner:latest
     env_file: .env
     ports:
       - "8000:8000"
