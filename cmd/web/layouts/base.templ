@@ -160,7 +160,7 @@ templ Navbar(authenticated bool, csrf_token string) {
 			<div class="flex gap-4">
 				if authenticated {
 					<form hx-post="/logout" hx-target="body">
-						<input type="hidden" name="csrf_token" value={ csrf_token }/>
+						<input type="hidden" name="gorilla.csrf.Token" value={ csrf_token }/>
 						<input type="submit" { components.ButtonAttrs()... } value="Log Out"/>
 					</form>
 				} else {

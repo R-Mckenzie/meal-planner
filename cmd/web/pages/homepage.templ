@@ -5,8 +5,8 @@ import (
 	"github.com/R-Mckenzie/mealplanner/cmd/web/layouts"
 )
 
-templ Homepage(authenticated bool, csrf_token string) {
-	@layouts.Base(authenticated, csrf_token) {
+templ Homepage(authenticated bool, csrfField string) {
+	@layouts.Base(authenticated, csrfField) {
 		@hero()
 		@keyFeatures()
 		@howItWorks()

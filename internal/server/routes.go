@@ -2,16 +2,16 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/R-Mckenzie/mealplanner/cmd/web"
 	"github.com/R-Mckenzie/mealplanner/cmd/web/pages"
 	"github.com/R-Mckenzie/mealplanner/internal/database"
 
-	"github.com/justinas/nosurf"
+	"github.com/gorilla/csrf"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -48,32 +48,22 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.Handle("POST /meals", s.auth.Sessions(s.auth.RequireAuthentication(http.HandlerFunc(s.meals.PostMealsHandler))))
 	mux.Handle("DELETE /meals/delete/{id}", s.auth.Sessions(s.auth.RequireAuthentication(http.HandlerFunc(s.meals.DeleteMealsHandler))))
 
-	csrfHandler := nosurf.New(mux)
-	csrfHandler.SetBaseCookie(http.Cookie{
-		HttpOnly: true,
-		Path:     "/",
-		Secure:   true,
-	})
-
-	csrfHandler.ExemptGlob("/meals/delete/*")
-	csrfHandler.ExemptGlob("/recipes/delete/*")
-	return logRequest(csrfHandler)
+	csrfMiddleware := csrf.Protect([]byte(os.Getenv("SESSION_KEY")),
+		csrf.Path("/"),
+		csrf.SameSite(csrf.SameSiteLaxMode),
+		csrf.Secure(false),
+		csrf.HttpOnly(false),
+	)
+	return csrfMiddleware(mux)
 }
 
 func favicon(w http.ResponseWriter, r *http.Request) {
 	http.ServeFileFS(w, r, web.Files, "assets/favicon.ico")
 }
 
-func logRequest(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		slog.Info(fmt.Sprintf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL))
-		handler.ServeHTTP(w, r)
-	})
-}
-
 func (s *Server) recipesPageHandler(w http.ResponseWriter, r *http.Request) {
 	recipeData := s.recipes.BuildUserRecipeData(s.auth.AuthorisedUser(r.Context()), r.Context())
-	pages.RecipesPage(recipeData, nosurf.Token(r)).Render(r.Context(), w)
+	pages.RecipesPage(recipeData, csrf.Token(r)).Render(r.Context(), w)
 }
 
 func (s *Server) dashboardPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -120,29 +110,29 @@ func (s *Server) dashboardPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := pages.DashboardData{WeekStartDate: targetDate, Recipes: recipeDatas, Meals: mealDatas}
 
 	if weekStart != "" {
-		pages.Dashboard(data, nosurf.Token(r)).Render(r.Context(), w)
+		pages.Dashboard(data, csrf.Token(r)).Render(r.Context(), w)
 		return
 	}
-	pages.DashboardPage(data, nosurf.Token(r)).Render(r.Context(), w)
+	pages.DashboardPage(data, csrf.Token(r)).Render(r.Context(), w)
 }
 
 func (s *Server) signupPageHandler(w http.ResponseWriter, r *http.Request) {
-	pages.SignupIndex(pages.SignupPageData{FormValues: pages.SignupFormValues{CSRFToken: nosurf.Token(r)}}).Render(r.Context(), w)
+	pages.SignupIndex(pages.SignupPageData{FormValues: pages.SignupFormValues{CSRFToken: csrf.Token(r)}}).Render(r.Context(), w)
 }
 
 func (s *Server) loginPageHandler(w http.ResponseWriter, r *http.Request) {
-	pages.LoginIndex(pages.LoginIndexPageData{FormValues: pages.LoginFormValues{CSRFToken: nosurf.Token(r)}}).Render(r.Context(), w)
+	pages.LoginIndex(pages.LoginIndexPageData{FormValues: pages.LoginFormValues{CSRFToken: csrf.Token(r)}}).Render(r.Context(), w)
 }
 
 func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
 	authed := s.auth.IsAuthenticated(r)
 
 	if r.URL.Path != "/" {
-		pages.Error404(authed, nosurf.Token(r)).Render(r.Context(), w)
+		pages.Error404(authed, csrf.Token(r)).Render(r.Context(), w)
 		return
 	}
 
-	pages.Homepage(authed, nosurf.Token(r)).Render(r.Context(), w)
+	pages.Homepage(authed, csrf.Token(r)).Render(r.Context(), w)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {

@@ -31,7 +31,7 @@ templ SignupIndex(data SignupPageData) {
 
 templ SignupForm(values SignupFormValues, errors validation.Errors) {
 	<form hx-post="/signup" class="flex flex-col gap-4">
-		<input type="hidden" name="csrf_token" value={ values.CSRFToken }/>
+		<input type="hidden" name="gorilla.csrf.Token" value={ values.CSRFToken }/>
 		<div class="flex flex-col gap-1">
 			<label for="email">Email *</label>
 			<input

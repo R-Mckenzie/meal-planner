@@ -11,7 +11,7 @@ import (
 	"net/http"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/justinas/nosurf"
+	"github.com/gorilla/csrf"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -99,7 +99,7 @@ func (a *AuthService) UserSignup(w http.ResponseWriter, r *http.Request) {
 	err := a.users.Create(email, password, "template")
 	if errors.Is(err, database.ErrUserExists) {
 		e.Add("email", "Email already in use")
-		pages.SignupForm(pages.SignupFormValues{CSRFToken: nosurf.Token(r), Email: email, Password: password, PasswordConfirmation: passwordConfirmation}, e).Render(r.Context(), w)
+		pages.SignupForm(pages.SignupFormValues{CSRFToken: csrf.Token(r), Email: email, Password: password, PasswordConfirmation: passwordConfirmation}, e).Render(r.Context(), w)
 		return
 	}
 	if err != nil {
@@ -122,7 +122,7 @@ func (a *AuthService) UserLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		validation.Validate("credentials", "Email and password do not match", false, e)
 		slog.Info("Email and password do not match", "email", email)
-		pages.LoginForm(pages.LoginFormValues{Email: email, Password: password, CSRFToken: nosurf.Token(r)}, e).Render(r.Context(), w)
+		pages.LoginForm(pages.LoginFormValues{Email: email, Password: password, CSRFToken: csrf.Token(r)}, e).Render(r.Context(), w)
 		return
 	}
 

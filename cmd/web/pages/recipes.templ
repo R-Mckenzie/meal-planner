@@ -69,7 +69,7 @@ templ CreateRecipeForm(afterDelete bool, csrf_token string) {
 		hx-swap="afterend"
 		u
 	>
-		<input type="hidden" name="csrf_token" value={ csrf_token }/>
+		<input type="hidden" name="gorilla.csrf.Token" value={ csrf_token }/>
 		<label for="title">Title *</label>
 		<input { components.InputAttrs(false)... } name="title"/>
 		<label for="ingredients">Ingredients *</label>
@@ -87,7 +87,7 @@ templ RecipeForm(recipe RecipesData, csrf_token string) {
 		hx-target={ "#recipe_" + strconv.Itoa(recipe.RecipeID) }
 		hx-swap="outerHTML"
 	>
-		<input type="hidden" name="csrf_token" value={ csrf_token }/>
+		<input type="hidden" name="gorilla.csrf.Token" value={ csrf_token }/>
 		<label for="title">Title *</label>
 		<input { components.InputAttrs(false)... } name="title" value={ recipe.RecipeTitle }/>
 		<label for="ingredients">Ingredients *</label>
@@ -107,7 +107,7 @@ templ RecipeForm(recipe RecipesData, csrf_token string) {
 		hx-swap="outerHTML"
 		hx-params="none"
 	>
-		<input type="hidden" name="csrf_token" value={ csrf_token }/>
+		<input type="hidden" name="gorilla.csrf.Token" value={ csrf_token }/>
 		<button { components.ButtonAttrs()... }>Delete</button>
 	</form>
 }

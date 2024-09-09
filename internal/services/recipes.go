@@ -11,7 +11,7 @@ import (
 	"github.com/R-Mckenzie/mealplanner/cmd/web/pages"
 	"github.com/R-Mckenzie/mealplanner/internal/auth"
 	"github.com/R-Mckenzie/mealplanner/internal/database"
-	"github.com/justinas/nosurf"
+	"github.com/gorilla/csrf"
 )
 
 type RecipeService struct {
@@ -114,7 +114,7 @@ func (rs *RecipeService) DeleteRecipeHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	pages.CreateRecipeForm(true, nosurf.Token(r)).Render(r.Context(), w)
+	pages.CreateRecipeForm(true, csrf.Token(r)).Render(r.Context(), w)
 
 }
 
@@ -127,12 +127,12 @@ func (rs *RecipeService) GetRecipeHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if id == -1 {
-		pages.CreateRecipeForm(false, nosurf.Token(r)).Render(r.Context(), w)
+		pages.CreateRecipeForm(false, csrf.Token(r)).Render(r.Context(), w)
 		return
 	}
 
 	recipe, err := rs.ByID(id)
-	pages.RecipeForm(pages.RecipesData{RecipeID: recipe.ID, RecipeTitle: recipe.Title, RecipeIngredients: recipe.Ingredients, RecipeMethod: recipe.Method}, nosurf.Token(r)).Render(r.Context(), w)
+	pages.RecipeForm(pages.RecipesData{RecipeID: recipe.ID, RecipeTitle: recipe.Title, RecipeIngredients: recipe.Ingredients, RecipeMethod: recipe.Method}, csrf.Token(r)).Render(r.Context(), w)
 }
 
 func (rs *RecipeService) ByUser(ownerID int) ([]database.Recipe, error) {

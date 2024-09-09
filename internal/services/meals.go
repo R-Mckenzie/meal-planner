@@ -9,7 +9,7 @@ import (
 	"github.com/R-Mckenzie/mealplanner/cmd/web/pages"
 	"github.com/R-Mckenzie/mealplanner/internal/auth"
 	"github.com/R-Mckenzie/mealplanner/internal/database"
-	"github.com/justinas/nosurf"
+	"github.com/gorilla/csrf"
 )
 
 type MealService struct {
@@ -66,17 +66,13 @@ func (ms *MealService) PostMealsHandler(w http.ResponseWriter, r *http.Request) 
 	slog.Info("data:", "data", data)
 
 	date, err := time.Parse(time.DateOnly, dateString)
-	pages.MealPlanItems(data, date, nosurf.Token(r)).Render(r.Context(), w)
+	pages.MealPlanItems(data, date, csrf.Token(r)).Render(r.Context(), w)
 }
 
 func (ms *MealService) DeleteMealsHandler(w http.ResponseWriter, r *http.Request) {
 	csrf := r.URL.Query().Get("csrf_token")
-	ok := nosurf.VerifyToken(nosurf.Token(r), csrf)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		slog.Warn("csrf fail", "csrf_token", csrf)
-		return
-	}
+	slog.Warn("not using CSRF", "csrf_token", csrf)
+
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {

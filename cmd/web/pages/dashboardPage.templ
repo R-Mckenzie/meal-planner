@@ -108,7 +108,7 @@ func getDateString(date time.Time) string {
 
 templ MealPlanForm(meals []MealData, date time.Time, csrf_token string) {
 	<form class="sortable" hx-post="/meals" hx-trigger="end, add">
-		<input type="hidden" name="csrf_token" value={ csrf_token }/>
+		<input type="hidden" name="gorilla.csrf.Token" value={ csrf_token }/>
 		<input type="hidden" name="date" value={ date.Format(time.DateOnly) }/>
 		for _, item := range meals {
 			@mealCard(item.RecipeName, item.RecipeID, item.MealID)
@@ -117,7 +117,7 @@ templ MealPlanForm(meals []MealData, date time.Time, csrf_token string) {
 }
 
 templ MealPlanItems(meals []MealData, date time.Time, csrf_token string) {
-	<input type="hidden" name="csrf_token" value={ csrf_token }/>
+	<input type="hidden" name="gorilla.csrf.Token" value={ csrf_token }/>
 	<input type="hidden" name="date" value={ date.Format(time.DateOnly) }/>
 	for _, item := range meals {
 		@mealCard(item.RecipeName, item.RecipeID, item.MealID)
@@ -141,7 +141,7 @@ templ mealCard(recipe string, recipeID, mealID int) {
 		if mealID > -1 {
 			<button
 				class="text-red-600 text-center font-black rounded-sm"
-				hx-params="csrf_token"
+				hx-params="gorilla.csrf.Token"
 				hx-delete={ delPath(mealID) }
 				hx-target={ "#i" + strconv.Itoa(mealID) }
 				hx-swap="outerHTML"
