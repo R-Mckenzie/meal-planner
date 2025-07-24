@@ -57,8 +57,15 @@ interface Recipe {
   instructions?: string
 }
 
+interface DayMeals {
+  breakfast: Recipe[]
+  lunch: Recipe[]
+  dinner: Recipe[]
+  snack: Recipe[]
+}
+
 interface MealPlan {
-  [date: string]: Recipe[]
+  [date: string]: DayMeals
 }
 
 interface ShoppingListItem {
@@ -398,7 +405,7 @@ const RecipeCard = ({
   const [isExpanded, setIsExpanded] = useState(false)
 
   const handleCardClick = () => {
-    if (onMobileSelect && window.innerWidth < 1024) {
+    if (onMobileSelect && window.innerWidth < 1280) {
       onMobileSelect(recipe)
     }
   }
@@ -506,7 +513,7 @@ const RecipeCard = ({
 
 const CalendarDay = ({
   date,
-  recipes,
+  dayMeals,
   onDrop,
   onDragOver,
   onDragLeave,
@@ -517,38 +524,43 @@ const CalendarDay = ({
   isMobileAddMode,
 }: {
   date: string
-  recipes: Recipe[]
-  onDrop: (date: string) => void
+  dayMeals: DayMeals
+  onDrop: (date: string, mealType: keyof DayMeals) => void
   onDragOver: (e: React.DragEvent) => void
   onDragLeave: () => void
   isDragOver: boolean
-  onRemoveRecipe: (date: string, recipeIndex: number) => void
+  onRemoveRecipe: (date: string, mealType: keyof DayMeals, recipeIndex: number) => void
   onClearDay: (date: string) => void
-  onMobileAdd?: (date: string) => void
+  onMobileAdd?: (date: string, mealType: keyof DayMeals) => void
   isMobileAddMode?: boolean
 }) => {
   const dayNumber = new Date(date).getDate()
-  const isToday = false // Disable today highlighting to prevent hydration issues
+  const today = new Date().toISOString().split('T')[0]
+  const isToday = date === today
+  
+  const mealTypes: { key: keyof DayMeals; label: string; icon: React.ReactNode }[] = [
+    { key: 'breakfast', label: 'Breakfast', icon: '🌅' },
+    { key: 'lunch', label: 'Lunch', icon: '☀️' },
+    { key: 'dinner', label: 'Dinner', icon: '🌙' },
+    { key: 'snack', label: 'Snack', icon: '🍎' },
+  ]
 
-  const handleDayClick = () => {
-    if (onMobileAdd && isMobileAddMode && window.innerWidth < 1024) {
-      onMobileAdd(date)
+  const handleMealSectionClick = (mealType: keyof DayMeals) => {
+    if (onMobileAdd && isMobileAddMode && window.innerWidth < 1280) {
+      onMobileAdd(date, mealType)
     }
   }
 
+  const totalMeals = Object.values(dayMeals).flat().length
+
   return (
-    <div
-      className={`min-h-24 sm:min-h-32 p-2 border rounded-lg transition-colors ${
-        isDragOver ? "border-primary bg-primary/5" : "border-border"
-      } ${isToday ? "bg-primary/5 border-primary" : ""} ${
-        isMobileAddMode ? "lg:cursor-auto cursor-pointer hover:bg-primary/10 lg:hover:bg-transparent" : ""
-      }`}
-      onDrop={() => onDrop(date)}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onClick={handleDayClick}
-    >
-      <div className="flex items-center justify-between mb-2">
+    <div className={`border rounded-lg transition-colors min-h-[320px] group ${
+      isToday ? "border-primary bg-primary/5" : "border-border"
+    }`}>
+      {/* Day header */}
+      <div className={`flex items-center justify-between p-2 border-b ${
+        isToday ? "bg-primary/10" : "bg-muted/30"
+      }`}>
         <span className={`text-sm font-medium ${isToday ? "text-primary" : ""}`}>{dayNumber}</span>
         <div className="flex items-center gap-1">
           {isToday && (
@@ -556,11 +568,11 @@ const CalendarDay = ({
               Today
             </Badge>
           )}
-          {recipes.length > 0 && (
+          {totalMeals > 0 && (
             <Button
               size="sm"
               variant="ghost"
-              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               onClick={(e) => {
                 e.stopPropagation()
                 onClearDay(date)
@@ -572,30 +584,66 @@ const CalendarDay = ({
           )}
         </div>
       </div>
-      <div className="space-y-1 group">
-        {recipes.map((recipe, index) => (
+
+      {/* Meal sections */}
+      <div className="grid grid-rows-4 h-[calc(100%-2.5rem)]">
+        {mealTypes.map(({ key, label, icon }) => (
           <div
-            key={`${recipe.id}-${index}`}
-            className="bg-secondary/50 rounded p-1 text-xs truncate group/recipe hover:bg-secondary/70 transition-colors relative"
-            title={recipe.name}
+            key={key}
+            className={`border-b last:border-b-0 p-2 min-h-[70px] group transition-colors overflow-hidden ${
+              isDragOver ? "bg-primary/5" : "hover:bg-muted/20"
+            } ${
+              isMobileAddMode ? "cursor-pointer hover:bg-primary/10" : ""
+            }`}
+            onDrop={(e) => {
+              e.preventDefault()
+              onDrop(date, key)
+            }}
+            onDragOver={(e) => {
+              e.preventDefault()
+              onDragOver(e)
+            }}
+            onDragLeave={onDragLeave}
+            onClick={() => handleMealSectionClick(key)}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 flex-1 min-w-0">
-                <ChefHat className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{recipe.name}</span>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-1">
+                <span className="text-xs">{icon}</span>
+                <span className="text-xs font-medium text-muted-foreground">{label}</span>
               </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-4 w-4 p-0 opacity-0 group-hover/recipe:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onRemoveRecipe(date, index)
-                }}
-                title="Remove meal"
-              >
-                <X className="w-2.5 h-2.5" />
-              </Button>
+              {dayMeals[key].length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {dayMeals[key].length}
+                </span>
+              )}
+            </div>
+            <div className="space-y-1 w-full overflow-hidden">
+              {dayMeals[key].map((recipe, index) => (
+                <div
+                  key={`${recipe.id}-${index}`}
+                  className="bg-secondary/50 rounded p-1 text-xs group/recipe hover:bg-secondary/70 transition-colors relative w-full max-w-full overflow-hidden"
+                  title={recipe.name}
+                >
+                  <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
+                      <ChefHat className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate text-xs block max-w-full overflow-hidden text-ellipsis whitespace-nowrap">{recipe.name}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-4 w-4 p-0 opacity-0 group-hover/recipe:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onRemoveRecipe(date, key, index)
+                      }}
+                      title="Remove meal"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
@@ -632,8 +680,8 @@ const RecipeSidebar = ({
             Recipes
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            <span className="lg:hidden">Tap recipe, then tap day to add</span>
-            <span className="hidden lg:inline">Drag recipes to your calendar</span>
+            <span className="xl:hidden">Tap recipe, then tap day to add</span>
+            <span className="hidden xl:inline">Drag recipes to your calendar</span>
           </p>
           {isMobileAddMode && (
             <p className="text-xs text-primary mt-1">Now tap a day to add "{selectedRecipe?.name}"</p>
@@ -689,6 +737,13 @@ export default function MealPlanner() {
       sugar: 0,
     },
   })
+  const [hydrated, setHydrated] = useState(false);
+  const [shoppingListStartDate, setShoppingListStartDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [shoppingListEndDate, setShoppingListEndDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().split('T')[0];
+  });
 
   const [selectedWeekStart, setSelectedWeekStart] = useState(() => {
     const today = new Date()
@@ -696,6 +751,42 @@ export default function MealPlanner() {
     startOfWeek.setDate(today.getDate() - today.getDay())
     return startOfWeek
   })
+
+  useEffect(() => {
+    try {
+      const savedRecipes = window.localStorage.getItem("recipes");
+      if (savedRecipes) {
+        setRecipes(JSON.parse(savedRecipes));
+      }
+      const savedMealPlan = window.localStorage.getItem("mealPlan");
+      if (savedMealPlan) {
+        setMealPlan(JSON.parse(savedMealPlan));
+      }
+    } catch (error) {
+      console.error("Error loading data from local storage:", error);
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) {
+      try {
+        window.localStorage.setItem("recipes", JSON.stringify(recipes));
+      } catch (error) {
+        console.error("Error saving recipes to local storage:", error);
+      }
+    }
+  }, [recipes, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) {
+      try {
+        window.localStorage.setItem("mealPlan", JSON.stringify(mealPlan));
+      } catch (error) {
+        console.error("Error saving meal plan to local storage:", error);
+      }
+    }
+  }, [mealPlan, hydrated]);
 
   const today = new Date()
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -709,54 +800,68 @@ export default function MealPlanner() {
   const [selectedRecipeForMobile, setSelectedRecipeForMobile] = useState<Recipe | null>(null)
   const [isMobileAddMode, setIsMobileAddMode] = useState(false)
 
-  const generateShoppingList = () => {
-    const ingredientMap = new Map<string, { amount: number; unit: string; recipes: string[] }>()
+  const calculateShoppingList = (startDate: string, endDate: string) => {
+    const ingredientMap = new Map<string, { amount: number; unit: string; recipes: string[] }>();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-    // Collect all recipes from the meal plan
-    Object.values(mealPlan).forEach((dayRecipes) => {
-      dayRecipes.forEach((recipe) => {
-        const servingMultiplier = peopleCount / recipe.servings
+    Object.entries(mealPlan).forEach(([dateString, dayMeals]) => {
+      const currentDate = new Date(dateString);
+      if (currentDate >= start && currentDate <= end) {
+        Object.values(dayMeals).flat().forEach((recipe) => {
+          const servingMultiplier = peopleCount / recipe.servings;
 
-        recipe.ingredients.forEach((ingredient) => {
-          const key = `${ingredient.name.toLowerCase()}-${ingredient.unit}`
-          const amount = Number.parseFloat(ingredient.amount) * servingMultiplier
+          recipe.ingredients.forEach((ingredient) => {
+            const key = `${ingredient.name.toLowerCase()}-${ingredient.unit}`;
+            const amount = Number.parseFloat(ingredient.amount) * servingMultiplier;
 
-          if (ingredientMap.has(key)) {
-            const existing = ingredientMap.get(key)!
-            existing.amount += amount
-            if (!existing.recipes.includes(recipe.name)) {
-              existing.recipes.push(recipe.name)
+            if (ingredientMap.has(key)) {
+              const existing = ingredientMap.get(key)!;
+              existing.amount += amount;
+              if (!existing.recipes.includes(recipe.name)) {
+                existing.recipes.push(recipe.name);
+              }
+            } else {
+              ingredientMap.set(key, {
+                amount,
+                unit: ingredient.unit,
+                recipes: [recipe.name],
+              });
             }
-          } else {
-            ingredientMap.set(key, {
-              amount,
-              unit: ingredient.unit,
-              recipes: [recipe.name],
-            })
-          }
-        })
-      })
-    })
+          });
+        });
+      }
+    });
 
-    // Convert to shopping list items
     const items: ShoppingListItem[] = Array.from(ingredientMap.entries()).map(([key, data]) => {
-      const name = key.split("-")[0]
+      const name = key.split('-')[0];
       return {
         id: key,
         name: name.charAt(0).toUpperCase() + name.slice(1),
-        amount: Math.round(data.amount * 100) / 100, // Round to 2 decimal places
+        amount: Math.round(data.amount * 100) / 100,
         unit: data.unit,
         recipes: data.recipes,
         checked: false,
-      }
-    })
+      };
+    });
 
-    // Sort by name
-    items.sort((a, b) => a.name.localeCompare(b.name))
+    items.sort((a, b) => a.name.localeCompare(b.name));
+    setShoppingList(items);
+  };
 
-    setShoppingList(items)
-    setIsShoppingListOpen(true)
-  }
+  const handleGenerateShoppingList = () => {
+    const today = new Date();
+    const oneWeekAhead = new Date();
+    oneWeekAhead.setDate(today.getDate() + 7);
+
+    const startDate = today.toISOString().split('T')[0];
+    const endDate = oneWeekAhead.toISOString().split('T')[0];
+
+    setShoppingListStartDate(startDate);
+    setShoppingListEndDate(endDate);
+    calculateShoppingList(startDate, endDate);
+    setIsShoppingListOpen(true);
+  };
 
   const toggleShoppingListItem = (itemId: string) => {
     setShoppingList((prev) => prev.map((item) => (item.id === itemId ? { ...item, checked: !item.checked } : item)))
@@ -798,28 +903,43 @@ export default function MealPlanner() {
     setDragOverDate(null)
   }
 
-  const handleDrop = (date: string) => {
+  const handleDrop = (date: string, mealType: keyof DayMeals) => {
     if (draggedRecipe) {
       setMealPlan((prev) => ({
         ...prev,
-        [date]: [...(prev[date] || []), draggedRecipe],
+        [date]: {
+          breakfast: prev[date]?.breakfast || [],
+          lunch: prev[date]?.lunch || [],
+          dinner: prev[date]?.dinner || [],
+          snack: prev[date]?.snack || [],
+          ...prev[date],
+          [mealType]: [...(prev[date]?.[mealType] || []), draggedRecipe],
+        },
       }))
     }
     setDraggedRecipe(null)
     setDragOverDate(null)
   }
 
-  const handleRemoveRecipe = (date: string, recipeIndex: number) => {
+  const handleRemoveRecipe = (date: string, mealType: keyof DayMeals, recipeIndex: number) => {
     setMealPlan((prev) => ({
       ...prev,
-      [date]: prev[date]?.filter((_, index) => index !== recipeIndex) || [],
+      [date]: {
+        ...prev[date],
+        [mealType]: prev[date]?.[mealType]?.filter((_, index) => index !== recipeIndex) || [],
+      },
     }))
   }
 
   const handleClearDay = (date: string) => {
     setMealPlan((prev) => ({
       ...prev,
-      [date]: [],
+      [date]: {
+        breakfast: [],
+        lunch: [],
+        dinner: [],
+        snack: [],
+      },
     }))
   }
 
@@ -944,23 +1064,32 @@ export default function MealPlanner() {
     }
   }
 
-  const handleMobileAddToDay = (date: string) => {
+  const handleMobileAddToDay = (date: string, mealType: keyof DayMeals) => {
     if (selectedRecipeForMobile) {
       setMealPlan((prev) => ({
         ...prev,
-        [date]: [...(prev[date] || []), selectedRecipeForMobile],
+        [date]: {
+          breakfast: prev[date]?.breakfast || [],
+          lunch: prev[date]?.lunch || [],
+          dinner: prev[date]?.dinner || [],
+          snack: prev[date]?.snack || [],
+          ...prev[date],
+          [mealType]: [...(prev[date]?.[mealType] || []), selectedRecipeForMobile],
+        },
       }))
       setSelectedRecipeForMobile(null)
       setIsMobileAddMode(false)
     }
   }
 
-  const hasPlannedMeals = Object.values(mealPlan).some((dayRecipes) => dayRecipes.length > 0)
+  const hasPlannedMeals = Object.values(mealPlan).some((dayMeals) => 
+    Object.values(dayMeals).some((meals) => meals.length > 0)
+  )
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-background">
+    <div className="flex flex-col xl:flex-row h-screen bg-background">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-80 border-r bg-muted/30">
+      <div className="hidden xl:block w-80 border-r bg-muted/30">
         <RecipeSidebar
           recipes={recipes}
           onDragStart={handleDragStart}
@@ -976,11 +1105,8 @@ export default function MealPlanner() {
       {/* Mobile Sheet for Recipes */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent side="left" className="w-80 p-0">
-          <SheetHeader className="p-4 border-b">
-            <SheetTitle className="flex items-center gap-2">
-              <ChefHat className="w-5 h-5" />
-              Recipes
-            </SheetTitle>
+          <SheetHeader>
+            <SheetTitle></SheetTitle>
           </SheetHeader>
             <RecipeSidebar
               recipes={recipes}
@@ -1003,7 +1129,7 @@ export default function MealPlanner() {
               {/* Mobile Menu Button */}
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="sm" className="lg:hidden bg-transparent">
+                  <Button variant="outline" size="sm" className="xl:hidden bg-transparent">
                     <Menu className="w-4 h-4" />
                   </Button>
                 </SheetTrigger>
@@ -1030,7 +1156,7 @@ export default function MealPlanner() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={generateShoppingList}
+                onClick={handleGenerateShoppingList}
                 disabled={!hasPlannedMeals}
                 className="hidden sm:flex bg-transparent"
               >
@@ -1040,7 +1166,7 @@ export default function MealPlanner() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={generateShoppingList}
+                onClick={handleGenerateShoppingList}
                 disabled={!hasPlannedMeals}
                 className="sm:hidden bg-transparent"
               >
@@ -1070,7 +1196,7 @@ export default function MealPlanner() {
 
         <div className="flex-1 p-2 sm:p-4 overflow-auto">
           {/* Mobile: Stack days vertically, Desktop: 7-column grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-2 sm:gap-4">
             {weekDates.map((date, index) => (
               <div key={date} className="flex flex-col">
                 <div className="text-center mb-2">
@@ -1081,7 +1207,7 @@ export default function MealPlanner() {
                 </div>
                 <CalendarDay
                   date={date}
-                  recipes={mealPlan[date] || []}
+                  dayMeals={mealPlan[date] || { breakfast: [], lunch: [], dinner: [], snack: [] }}
                   onDrop={handleDrop}
                   onDragOver={(e) => handleDragOver(e, date)}
                   onDragLeave={handleDragLeave}
@@ -1107,9 +1233,9 @@ export default function MealPlanner() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <Label htmlFor="people-count">People eating:</Label>
+                <Label htmlFor="people-count">People:</Label>
                 <Input
                   id="people-count"
                   type="number"
@@ -1120,7 +1246,27 @@ export default function MealPlanner() {
                   className="w-20"
                 />
               </div>
-              <Button onClick={generateShoppingList} size="sm">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="start-date">From:</Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  value={shoppingListStartDate}
+                  onChange={(e) => setShoppingListStartDate(e.target.value)}
+                  className="w-40"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="end-date">To:</Label>
+                <Input
+                  id="end-date"
+                  type="date"
+                  value={shoppingListEndDate}
+                  onChange={(e) => setShoppingListEndDate(e.target.value)}
+                  className="w-40"
+                />
+              </div>
+              <Button onClick={() => calculateShoppingList(shoppingListStartDate, shoppingListEndDate)} size="sm">
                 Recalculate
               </Button>
             </div>
