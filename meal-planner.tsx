@@ -3,6 +3,20 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import { useSession, signOut } from "next-auth/react"
+import { 
+  fetchRecipes, 
+  createRecipe, 
+  updateRecipe, 
+  deleteRecipe, 
+  fetchMealPlans,
+  addRecipeToMealPlan,
+  removeRecipeFromMealPlan,
+  clearMealPlan,
+  type Recipe as ApiRecipe,
+  type MealPlan as ApiMealPlan,
+  type MealPlanRecipe as ApiMealPlanRecipe
+} from "@/lib/api"
 import {
   Calendar,
   ChefHat,
@@ -15,6 +29,7 @@ import {
   X,
   Menu,
   ShoppingCart,
+  LogOut,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -692,7 +707,7 @@ const RecipeSidebar = ({
         </Button>
       </div>
     </div>
-    <ScrollArea className="flex-1 overflow-scroll" style="scrollbar-width: none">
+    <ScrollArea className="flex-1 overflow-scroll" style={{ scrollbarWidth: "none" }}>
       <div className="p-4">
         {recipes.map((recipe) => (
           <RecipeCard
@@ -711,10 +726,13 @@ const RecipeSidebar = ({
 )
 
 export default function MealPlanner() {
+  const { data: session } = useSession()
   const [mealPlan, setMealPlan] = useState<MealPlan>({})
   const [draggedRecipe, setDraggedRecipe] = useState<Recipe | null>(null)
   const [dragOverDate, setDragOverDate] = useState<string | null>(null)
-  const [recipes, setRecipes] = useState<Recipe[]>(defaultRecipes)
+  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isRecipeDialogOpen, setIsRecipeDialogOpen] = useState(false)
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -752,41 +770,80 @@ export default function MealPlanner() {
     return startOfWeek
   })
 
+  // Load user's recipes and meal plans from API
   useEffect(() => {
-    try {
-      const savedRecipes = window.localStorage.getItem("recipes");
-      if (savedRecipes) {
-        setRecipes(JSON.parse(savedRecipes));
+    const loadUserData = async () => {
+      if (!session?.user) {
+        setLoading(false)
+        return
       }
-      const savedMealPlan = window.localStorage.getItem("mealPlan");
-      if (savedMealPlan) {
-        setMealPlan(JSON.parse(savedMealPlan));
-      }
-    } catch (error) {
-      console.error("Error loading data from local storage:", error);
-    }
-    setHydrated(true);
-  }, []);
 
-  useEffect(() => {
-    if (hydrated) {
       try {
-        window.localStorage.setItem("recipes", JSON.stringify(recipes));
-      } catch (error) {
-        console.error("Error saving recipes to local storage:", error);
-      }
-    }
-  }, [recipes, hydrated]);
+        setLoading(true)
+        setError(null)
+        
+        // Fetch user's recipes
+        const recipesData = await fetchRecipes()
+        
+        // If user has no recipes, seed with defaults
+        if (recipesData.length === 0) {
+          try {
+            const response = await fetch('/api/seed-defaults', { method: 'POST' })
+            if (response.ok) {
+              // Refetch recipes after seeding
+              const newRecipesData = await fetchRecipes()
+              setRecipes(newRecipesData)
+            } else {
+              setRecipes(recipesData)
+            }
+          } catch (error) {
+            console.error('Error seeding default recipes:', error)
+            setRecipes(recipesData)
+          }
+        } else {
+          setRecipes(recipesData)
+        }
 
-  useEffect(() => {
-    if (hydrated) {
-      try {
-        window.localStorage.setItem("mealPlan", JSON.stringify(mealPlan));
-      } catch (error) {
-        console.error("Error saving meal plan to local storage:", error);
+        // Fetch meal plans for current week
+        const startDate = new Date(selectedWeekStart)
+        const endDate = new Date(selectedWeekStart)
+        endDate.setDate(startDate.getDate() + 6)
+        
+        const mealPlansData = await fetchMealPlans(
+          startDate.toISOString().split('T')[0],
+          endDate.toISOString().split('T')[0]
+        )
+        
+        // Convert API meal plans to component format
+        const mealPlanMap: MealPlan = {}
+        mealPlansData.forEach((mealPlan: ApiMealPlan) => {
+          const dateStr = new Date(mealPlan.date).toISOString().split('T')[0]
+          mealPlanMap[dateStr] = {
+            breakfast: [],
+            lunch: [],
+            dinner: [],
+            snack: []
+          }
+          
+          mealPlan.recipes.forEach((mpr: ApiMealPlanRecipe) => {
+            const mealType = mpr.mealType.toLowerCase() as keyof DayMeals
+            mealPlanMap[dateStr][mealType].push(mpr.recipe)
+          })
+        })
+        
+        setMealPlan(mealPlanMap)
+      } catch (err) {
+        console.error("Error loading user data:", err)
+        setError("Failed to load your data. Please try refreshing the page.")
+      } finally {
+        setLoading(false)
+        setHydrated(true)
       }
     }
-  }, [mealPlan, hydrated]);
+
+    loadUserData()
+  }, [session, selectedWeekStart]);
+
 
   const today = new Date()
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -811,7 +868,7 @@ export default function MealPlanner() {
         Object.values(dayMeals).flat().forEach((recipe) => {
           const servingMultiplier = peopleCount / recipe.servings;
 
-          recipe.ingredients.forEach((ingredient) => {
+          recipe.ingredients.forEach((ingredient: Ingredient) => {
             const key = `${ingredient.name.toLowerCase()}-${ingredient.unit}`;
             const amount = Number.parseFloat(ingredient.amount) * servingMultiplier;
 
@@ -903,19 +960,28 @@ export default function MealPlanner() {
     setDragOverDate(null)
   }
 
-  const handleDrop = (date: string, mealType: keyof DayMeals) => {
+  const handleDrop = async (date: string, mealType: keyof DayMeals) => {
     if (draggedRecipe) {
-      setMealPlan((prev) => ({
-        ...prev,
-        [date]: {
-          breakfast: prev[date]?.breakfast || [],
-          lunch: prev[date]?.lunch || [],
-          dinner: prev[date]?.dinner || [],
-          snack: prev[date]?.snack || [],
-          ...prev[date],
-          [mealType]: [...(prev[date]?.[mealType] || []), draggedRecipe],
-        },
-      }))
+      try {
+        // Add recipe to meal plan via API
+        await addRecipeToMealPlan(date, draggedRecipe.id, mealType)
+        
+        // Update local state optimistically
+        setMealPlan((prev) => ({
+          ...prev,
+          [date]: {
+            ...prev[date],
+            breakfast: prev[date]?.breakfast || [],
+            lunch: prev[date]?.lunch || [],
+            dinner: prev[date]?.dinner || [],
+            snack: prev[date]?.snack || [],
+            [mealType]: [...(prev[date]?.[mealType] || []), draggedRecipe],
+          },
+        }))
+      } catch (error) {
+        console.error("Error adding recipe to meal plan:", error)
+        setError("Failed to add recipe to meal plan")
+      }
     }
     setDraggedRecipe(null)
     setDragOverDate(null)
@@ -931,16 +997,25 @@ export default function MealPlanner() {
     }))
   }
 
-  const handleClearDay = (date: string) => {
-    setMealPlan((prev) => ({
-      ...prev,
-      [date]: {
-        breakfast: [],
-        lunch: [],
-        dinner: [],
-        snack: [],
-      },
-    }))
+  const handleClearDay = async (date: string) => {
+    try {
+      // Clear meal plan via API
+      await clearMealPlan(date)
+      
+      // Update local state
+      setMealPlan((prev) => ({
+        ...prev,
+        [date]: {
+          breakfast: [],
+          lunch: [],
+          dinner: [],
+          snack: [],
+        },
+      }))
+    } catch (error) {
+      console.error("Error clearing meal plan:", error)
+      setError("Failed to clear meal plan")
+    }
   }
 
   const handleCreateRecipe = () => {
@@ -980,24 +1055,39 @@ export default function MealPlanner() {
     setIsMobileMenuOpen(false)
   }
 
-  const handleDeleteRecipe = (recipeId: string) => {
-    setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId))
-    setMealPlan((prev) => {
-      const updated = { ...prev }
-      Object.keys(updated).forEach((date) => {
-        updated[date] = updated[date].filter((recipe) => recipe.id !== recipeId)
+  const handleDeleteRecipe = async (recipeId: string) => {
+    try {
+      // Delete recipe via API
+      await deleteRecipe(recipeId)
+      
+      // Update local state
+      setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId))
+      setMealPlan((prev) => {
+        const updated = { ...prev }
+        Object.keys(updated).forEach((date) => {
+          if (updated[date]) {
+            updated[date] = {
+              breakfast: updated[date].breakfast?.filter((recipe) => recipe.id !== recipeId) || [],
+              lunch: updated[date].lunch?.filter((recipe) => recipe.id !== recipeId) || [],  
+              dinner: updated[date].dinner?.filter((recipe) => recipe.id !== recipeId) || [],
+              snack: updated[date].snack?.filter((recipe) => recipe.id !== recipeId) || [],
+            }
+          }
+        })
+        return updated
       })
-      return updated
-    })
+    } catch (error) {
+      console.error("Error deleting recipe:", error)
+      setError("Failed to delete recipe")
+    }
   }
 
-  const handleSaveRecipe = () => {
+  const handleSaveRecipe = async () => {
     if (!recipeForm.name || !recipeForm.cookTime || !recipeForm.servings || !recipeForm.category) {
       return
     }
 
-    const newRecipe: Recipe = {
-      id: editingRecipe?.id || Date.now().toString(),
+    const recipeData = {
       name: recipeForm.name,
       cookTime: Number.parseInt(recipeForm.cookTime),
       servings: Number.parseInt(recipeForm.servings),
@@ -1007,21 +1097,37 @@ export default function MealPlanner() {
       instructions: recipeForm.instructions,
     }
 
-    if (editingRecipe) {
-      setRecipes((prev) => prev.map((recipe) => (recipe.id === editingRecipe.id ? newRecipe : recipe)))
-      setMealPlan((prev) => {
-        const updated = { ...prev }
-        Object.keys(updated).forEach((date) => {
-          updated[date] = updated[date].map((recipe) => (recipe.id === editingRecipe.id ? newRecipe : recipe))
+    try {
+      if (editingRecipe) {
+        // Update existing recipe
+        const updatedRecipe = await updateRecipe(editingRecipe.id, recipeData)
+        setRecipes((prev) => prev.map((recipe) => (recipe.id === editingRecipe.id ? updatedRecipe : recipe)))
+        setMealPlan((prev) => {
+          const updated = { ...prev }
+          Object.keys(updated).forEach((date) => {
+            if (updated[date]) {
+              updated[date] = {
+                breakfast: updated[date].breakfast?.map((recipe) => (recipe.id === editingRecipe.id ? updatedRecipe : recipe)) || [],
+                lunch: updated[date].lunch?.map((recipe) => (recipe.id === editingRecipe.id ? updatedRecipe : recipe)) || [],
+                dinner: updated[date].dinner?.map((recipe) => (recipe.id === editingRecipe.id ? updatedRecipe : recipe)) || [],
+                snack: updated[date].snack?.map((recipe) => (recipe.id === editingRecipe.id ? updatedRecipe : recipe)) || [],
+              }
+            }
+          })
+          return updated
         })
-        return updated
-      })
-    } else {
-      setRecipes((prev) => [...prev, newRecipe])
-    }
+      } else {
+        // Create new recipe
+        const newRecipe = await createRecipe(recipeData)
+        setRecipes((prev) => [...prev, newRecipe])
+      }
 
-    setIsRecipeDialogOpen(false)
-    setEditingRecipe(null)
+      setIsRecipeDialogOpen(false)
+      setEditingRecipe(null)
+    } catch (error) {
+      console.error("Error saving recipe:", error)
+      setError("Failed to save recipe")
+    }
   }
 
   const handlePreviousWeek = () => {
@@ -1064,19 +1170,28 @@ export default function MealPlanner() {
     }
   }
 
-  const handleMobileAddToDay = (date: string, mealType: keyof DayMeals) => {
+  const handleMobileAddToDay = async (date: string, mealType: keyof DayMeals) => {
     if (selectedRecipeForMobile) {
-      setMealPlan((prev) => ({
-        ...prev,
-        [date]: {
-          breakfast: prev[date]?.breakfast || [],
-          lunch: prev[date]?.lunch || [],
-          dinner: prev[date]?.dinner || [],
-          snack: prev[date]?.snack || [],
-          ...prev[date],
-          [mealType]: [...(prev[date]?.[mealType] || []), selectedRecipeForMobile],
-        },
-      }))
+      try {
+        // Add recipe to meal plan via API
+        await addRecipeToMealPlan(date, selectedRecipeForMobile.id, mealType)
+        
+        // Update local state optimistically
+        setMealPlan((prev) => ({
+          ...prev,
+          [date]: {
+            ...prev[date],
+            breakfast: prev[date]?.breakfast || [],
+            lunch: prev[date]?.lunch || [],
+            dinner: prev[date]?.dinner || [],
+            snack: prev[date]?.snack || [],
+            [mealType]: [...(prev[date]?.[mealType] || []), selectedRecipeForMobile],
+          },
+        }))
+      } catch (error) {
+        console.error("Error adding recipe to meal plan:", error)
+        setError("Failed to add recipe to meal plan")
+      }
       setSelectedRecipeForMobile(null)
       setIsMobileAddMode(false)
     }
@@ -1085,6 +1200,28 @@ export default function MealPlanner() {
   const hasPlannedMeals = Object.values(mealPlan).some((dayMeals) => 
     Object.values(dayMeals).some((meals) => meals.length > 0)
   )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading your meal plans...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <p className="text-destructive mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col xl:flex-row h-screen bg-background">
@@ -1173,6 +1310,15 @@ export default function MealPlanner() {
                 <ShoppingCart className="w-4 h-4" />
               </Button>
               <ThemeToggle />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => signOut()}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
               <div className="flex items-center gap-1">
                 <Button variant="outline" size="sm" onClick={handlePreviousWeek}>
                   <ChevronLeft className="w-4 h-4" />
